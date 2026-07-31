@@ -11,12 +11,14 @@ def _parse(source: str, path: str = "main.cpp"):
 
 
 def test_parses_includes() -> None:
+    """System and local includes are recorded."""
     module = _parse('#include <iostream>\n#include "greeter.h"\n')
     assert [imp.module for imp in module.imports] == ["iostream", "greeter.h"]
     assert module.language == Language.CPP
 
 
 def test_parses_class_with_methods_and_bases() -> None:
+    """Classes are extracted with bases and methods."""
     module = _parse(
         "class Child : public Base, private Other {\n"
         "public:\n"
@@ -35,11 +37,13 @@ def test_parses_class_with_methods_and_bases() -> None:
 
 
 def test_class_data_members_are_not_methods() -> None:
+    """Data members are not reported as methods."""
     module = _parse("class Counter {\npublic:\n    int count_;\n};\n")
     assert module.classes[0].methods == []
 
 
 def test_out_of_class_method_definition_is_function() -> None:
+    """An out-of-class method definition is recorded as a function."""
     module = _parse(
         "class Greeter {\npublic:\n    int greet(int times);\n};\n"
         "int Greeter::greet(int times) {\n    return times + 1;\n}\n"
@@ -49,12 +53,14 @@ def test_out_of_class_method_definition_is_function() -> None:
 
 
 def test_namespace_functions_extracted() -> None:
+    """Functions inside a namespace are extracted."""
     module = _parse("namespace util {\n" "    int add(int a, int b) { return a + b; }\n" "}\n")
     assert [fn.name for fn in module.functions] == ["add"]
     assert module.functions[0].params == ["a", "b"]
 
 
 def test_call_extraction_handles_field_and_qualified() -> None:
+    """Call extraction handles field, free, qualified, and arrow calls."""
     module = _parse(
         "void run() {\n"
         "    obj.method(1, 2);\n"

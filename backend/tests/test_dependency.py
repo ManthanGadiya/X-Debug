@@ -13,6 +13,7 @@ def _module(source: str, path: str):
 
 
 def test_simple_import_creates_edge() -> None:
+    """A simple import creates a dependency edge."""
     modules = [
         _module("import api\n", "main.py"),
         _module("def handler():\n    pass\n", "api.py"),
@@ -26,6 +27,7 @@ def test_simple_import_creates_edge() -> None:
 
 
 def test_package_import_resolves_to_file() -> None:
+    """A package import resolves to the module file."""
     modules = [
         _module("from pkg.mod import thing\n", "main.py"),
         _module("def thing():\n    pass\n", "pkg/mod.py"),
@@ -38,6 +40,7 @@ def test_package_import_resolves_to_file() -> None:
 
 
 def test_unknown_import_creates_no_edge() -> None:
+    """An unknown import creates no edge."""
     modules = [_module("import requests\n", "main.py")]
     graph = DependencyGraphBuilder().build(modules)
     assert graph.edge_count == 0
@@ -45,6 +48,7 @@ def test_unknown_import_creates_no_edge() -> None:
 
 
 def test_multi_level_import_resolves_longest_match() -> None:
+    """A multi-level import resolves to the longest matching module."""
     modules = [
         _module("import pkg.sub.mod\n", "main.py"),
         _module("pass\n", "pkg/__init__.py"),
@@ -57,6 +61,7 @@ def test_multi_level_import_resolves_longest_match() -> None:
 
 
 def test_duplicate_imports_are_deduplicated() -> None:
+    """Duplicate imports collapse into a single edge."""
     modules = [
         _module("import api\nimport api\n", "main.py"),
         _module("pass\n", "api.py"),
@@ -66,6 +71,7 @@ def test_duplicate_imports_are_deduplicated() -> None:
 
 
 def test_c_include_resolves_to_project_file() -> None:
+    """A local C include resolves to a project file."""
     from app.analysis.parsers.c import CParser
 
     c_parser = CParser()
@@ -81,6 +87,7 @@ def test_c_include_resolves_to_project_file() -> None:
 
 
 def test_system_include_creates_no_edge() -> None:
+    """A system include creates no dependency edge."""
     from app.analysis.parsers.c import CParser
 
     c_parser = CParser()

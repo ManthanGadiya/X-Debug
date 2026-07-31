@@ -54,6 +54,67 @@ class RuntimeStatus(StrEnum):
     FAILED = "failed"
 
 
+class TestCaseOutcome(StrEnum):
+    """Outcome of a single executed test case."""
+
+    PASSED = "passed"
+    FAILED = "failed"
+    ERROR = "error"
+    SKIPPED = "skipped"
+
+
+@dataclass
+class TestCase:
+    """One executed test case."""
+
+    name: str
+    outcome: TestCaseOutcome
+    duration_seconds: float
+    message: str | None = None
+
+
+@dataclass
+class TestSuite:
+    """Result of running a project's tests in one language."""
+
+    language: str
+    tests_run: int
+    passed: int
+    failed: int
+    skipped: int
+    duration_seconds: float
+    cases: list[TestCase] = field(default_factory=list)
+    error: str | None = None
+
+    @property
+    def succeeded(self) -> bool:
+        """Return True when every executed test passed."""
+        return self.failed == 0 and self.error is None
+
+
+@dataclass
+class TestExecution:
+    """Complete test execution output for one project."""
+
+    project_id: str
+    suites: dict[str, TestSuite] = field(default_factory=dict)
+
+    @property
+    def executed_count(self) -> int:
+        """Return the number of suites run."""
+        return len(self.suites)
+
+    @property
+    def total_tests_run(self) -> int:
+        """Return the summed number of executed tests across languages."""
+        return sum(suite.tests_run for suite in self.suites.values())
+
+    @property
+    def succeeded(self) -> bool:
+        """Return True when every suite passed."""
+        return bool(self.suites) and all(suite.succeeded for suite in self.suites.values())
+
+
 @dataclass
 class RuntimeResult:
     """Outcome of executing a project or program."""

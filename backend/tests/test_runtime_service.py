@@ -28,6 +28,7 @@ def _make_project(tmp_path: Path, files: dict[str, str]) -> Project:
 
 
 def test_python_entry_prefers_main(tmp_path: Path) -> None:
+    """Python entry detection prefers a main.py file."""
     files = [SourceFileRecord(path="main.py", language=Language.PYTHON, size_bytes=1, lines=1)]
     entry = _python_entry(files, tmp_path)
     assert entry is not None
@@ -35,6 +36,7 @@ def test_python_entry_prefers_main(tmp_path: Path) -> None:
 
 
 def test_python_entry_prefers_priority_names(tmp_path: Path) -> None:
+    """Priority entry names win over other Python files."""
     files = [
         SourceFileRecord(path="app.py", language=Language.PYTHON, size_bytes=1, lines=1),
         SourceFileRecord(path="main.py", language=Language.PYTHON, size_bytes=1, lines=1),
@@ -45,6 +47,7 @@ def test_python_entry_prefers_priority_names(tmp_path: Path) -> None:
 
 
 def test_python_entry_falls_back_to_single(tmp_path: Path) -> None:
+    """A lone Python file becomes the entry point."""
     files = [SourceFileRecord(path="script.py", language=Language.PYTHON, size_bytes=1, lines=1)]
     entry = _python_entry(files, tmp_path)
     assert entry is not None
@@ -52,6 +55,7 @@ def test_python_entry_falls_back_to_single(tmp_path: Path) -> None:
 
 
 def test_python_entry_none_for_multiple_without_convention(tmp_path: Path) -> None:
+    """Multiple files without a naming convention yield no entry."""
     files = [
         SourceFileRecord(path="a.py", language=Language.PYTHON, size_bytes=1, lines=1),
         SourceFileRecord(path="b.py", language=Language.PYTHON, size_bytes=1, lines=1),
@@ -60,6 +64,7 @@ def test_python_entry_none_for_multiple_without_convention(tmp_path: Path) -> No
 
 
 def test_compiled_entry_prefers_main_file(tmp_path: Path) -> None:
+    """Compiled entry detection prefers a main file."""
     files = [
         SourceFileRecord(path="main.c", language=Language.C, size_bytes=1, lines=1),
         SourceFileRecord(path="util.c", language=Language.C, size_bytes=1, lines=1),
@@ -70,6 +75,7 @@ def test_compiled_entry_prefers_main_file(tmp_path: Path) -> None:
 
 
 def test_compiled_entry_finds_main_definition(tmp_path: Path) -> None:
+    """Compiled entry detection finds a file defining main."""
     main_path = tmp_path / "program.c"
     main_path.write_text("int main(void) { return 0; }\n", encoding="utf-8")
     files = [SourceFileRecord(path="program.c", language=Language.C, size_bytes=1, lines=1)]
@@ -79,6 +85,7 @@ def test_compiled_entry_finds_main_definition(tmp_path: Path) -> None:
 
 
 def test_defines_main_detects_variants(tmp_path: Path) -> None:
+    """Main-definition detection handles C signature variants."""
     path = tmp_path / "a.c"
     path.write_text("void main() {}\n", encoding="utf-8")
     assert _defines_main(path)
@@ -87,6 +94,7 @@ def test_defines_main_detects_variants(tmp_path: Path) -> None:
 
 
 def test_detect_entry_points_orders_by_language(tmp_path: Path) -> None:
+    """Entry points are ordered by language priority."""
     project = _make_project(
         tmp_path,
         {
@@ -100,6 +108,7 @@ def test_detect_entry_points_orders_by_language(tmp_path: Path) -> None:
 
 
 def test_analyze_python_project_captures_runtime(tmp_path: Path) -> None:
+    """Analyzing a Python project captures runtime evidence."""
     project = _make_project(
         tmp_path,
         {
@@ -118,6 +127,7 @@ def test_analyze_python_project_captures_runtime(tmp_path: Path) -> None:
 
 
 def test_analyze_c_project_when_toolchain_available(tmp_path: Path) -> None:
+    """Analyzing a C project captures output when a toolchain exists."""
     project = _make_project(
         tmp_path,
         {"main.c": '#include <stdio.h>\nint main(void) {\n    printf("ok");\n    return 0;\n}\n'},

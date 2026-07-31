@@ -17,15 +17,18 @@ class _StubFrame:
 
 
 def test_short_path_trims_long_paths() -> None:
+    """Long paths are trimmed to the maximum length."""
     long_path = "x" * 500
     assert _short_path(long_path) == long_path[-300:]
 
 
 def test_short_path_keeps_short_paths() -> None:
+    """Short paths are returned unchanged."""
     assert _short_path("main.py") == "main.py"
 
 
 def test_safe_keeps_primitives() -> None:
+    """Primitive values pass through the snapshot safely."""
     assert _safe(None) is None
     assert _safe(42) == 42
     assert _safe("text") == "text"
@@ -33,6 +36,7 @@ def test_safe_keeps_primitives() -> None:
 
 
 def test_safe_bounds_collections() -> None:
+    """Collections are bounded to the snapshot limit."""
     assert _safe(list(range(100))) == list(range(25))
     snapshot = _safe({"a": 1, "b": [1, 2, 3]})
     assert snapshot["a"] == 1
@@ -40,11 +44,13 @@ def test_safe_bounds_collections() -> None:
 
 
 def test_safe_reprs_objects() -> None:
+    """Objects are reduced to their string representation."""
     snapshot = _safe(object())
     assert isinstance(snapshot, str)
 
 
 def test_snapshot_captures_locals() -> None:
+    """A frame's locals are captured into a snapshot dict."""
     import inspect
 
     frame = inspect.currentframe()
@@ -54,12 +60,14 @@ def test_snapshot_captures_locals() -> None:
 
 
 def test_collector_serializes_empty() -> None:
+    """An empty collector serializes an empty event list."""
     collector = TraceCollector()
     payload = collector.to_json()
     assert '"events": []' in payload
 
 
 def test_collector_call_event_records_variables() -> None:
+    """A call event records function, location, and variables."""
     collector = TraceCollector()
     trace = collector.trace_function
     frame = _StubFrame()
@@ -76,6 +84,7 @@ def test_collector_call_event_records_variables() -> None:
 
 
 def test_collector_return_and_line_events() -> None:
+    """Return and line events are recorded in order."""
     collector = TraceCollector()
     trace = collector.trace_function
     frame = _StubFrame()
@@ -89,6 +98,7 @@ def test_collector_return_and_line_events() -> None:
 
 
 def test_collector_exception_event_records_last_exception() -> None:
+    """An exception event records the last raised exception."""
     collector = TraceCollector()
     trace = collector.trace_function
     frame = _StubFrame()
@@ -103,6 +113,7 @@ def test_collector_exception_event_records_last_exception() -> None:
 
 
 def test_collector_skips_generated_filenames() -> None:
+    """Events from generated filenames are skipped."""
     collector = TraceCollector()
     trace = collector.trace_function
     frame = _StubFrame()
@@ -113,6 +124,7 @@ def test_collector_skips_generated_filenames() -> None:
 
 
 def test_run_target_writes_trace_file(tmp_path) -> None:
+    """Running a target writes a trace file on success."""
     source = tmp_path / "ok.py"
     source.write_text("def f():\n    return 1\n\nprint(f())\n", encoding="utf-8")
     trace_path = tmp_path / "trace.json"
@@ -128,6 +140,7 @@ def test_run_target_writes_trace_file(tmp_path) -> None:
 
 
 def test_run_target_writes_trace_on_failure(tmp_path) -> None:
+    """Running a failing target still writes a trace file."""
     source = tmp_path / "fail.py"
     source.write_text("raise RuntimeError('bad')\n", encoding="utf-8")
     trace_path = tmp_path / "trace.json"

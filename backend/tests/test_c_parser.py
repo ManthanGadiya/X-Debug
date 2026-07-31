@@ -11,6 +11,7 @@ def _parse(source: str, path: str = "main.c"):
 
 
 def test_parses_includes() -> None:
+    """System and local includes are recorded."""
     module = _parse('#include <stdio.h>\n#include "mylib.h"\n')
     assert [imp.module for imp in module.imports] == ["stdio.h", "mylib.h"]
     assert [imp.line for imp in module.imports] == [1, 2]
@@ -19,6 +20,7 @@ def test_parses_includes() -> None:
 
 
 def test_parses_functions_with_params_and_calls() -> None:
+    """Functions are extracted with parameters and calls."""
     module = _parse(
         "int add(int a, int b) {\n"
         "    return a + b;\n"
@@ -37,28 +39,33 @@ def test_parses_functions_with_params_and_calls() -> None:
 
 
 def test_parses_global_variables() -> None:
+    """Module-scope global variables are recorded."""
     module = _parse("static int global_var = 5;\nint counter;\n")
     assert [var.name for var in module.variables] == ["global_var", "counter"]
     assert all(var.scope == "module" for var in module.variables)
 
 
 def test_does_not_record_function_prototypes_as_variables() -> None:
+    """Function prototypes are not mistaken for variables."""
     module = _parse("int helper(int x);\nint global = 1;\n")
     assert [var.name for var in module.variables] == ["global"]
 
 
 def test_parses_struct_as_class() -> None:
+    """A named struct is modelled as a class."""
     module = _parse("typedef struct Point { int x; int y; } Point;\n")
     assert [cls.name for cls in module.classes] == ["Point"]
 
 
 def test_parses_anonymous_struct_ignored() -> None:
+    """An anonymous struct is ignored but its instance kept."""
     module = _parse("struct { int x; } instance;\n")
     assert module.classes == []
     assert [var.name for var in module.variables] == ["instance"]
 
 
 def test_function_call_through_pointer() -> None:
+    """Calls through function pointers and arrows are captured."""
     module = _parse("void run(void) {\n    callback();\n    obj->method(1);\n}\n")
     assert "callback" in module.functions[0].calls
     assert "method" in module.functions[0].calls

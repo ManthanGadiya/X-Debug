@@ -15,6 +15,12 @@ class RuntimeStartRequest(BaseModel):
     project_id: str = Field(min_length=1)
 
 
+class TestStartRequest(BaseModel):
+    """Request body for starting a test execution run."""
+
+    project_id: str = Field(min_length=1)
+
+
 class RuntimeExceptionSchema(BaseModel):
     """Serializable exception captured during execution."""
 
@@ -71,3 +77,52 @@ class RuntimeTraceDetail(RuntimeResultSchema):
     """A runtime result including the full captured execution trace."""
 
     events: list[TraceEventSchema] = Field(default_factory=list)
+
+
+class TestCaseSchema(BaseModel):
+    """Serializable outcome of one executed test case."""
+
+    name: str
+    outcome: str
+    duration_seconds: float = 0.0
+    message: str | None = None
+
+
+class TestSuiteSchema(BaseModel):
+    """Serializable result of one language's test suite."""
+
+    language: str
+    tests_run: int
+    passed: int
+    failed: int
+    skipped: int
+    duration_seconds: float = 0.0
+    error: str | None = None
+
+
+class TestSuiteDetail(TestSuiteSchema):
+    """A test suite including individual test case outcomes."""
+
+    cases: list[TestCaseSchema] = Field(default_factory=list)
+
+
+class TestSummary(BaseModel):
+    """Lifecycle state of one test run."""
+
+    id: str
+    project_id: str
+    status: RuntimeStatus
+    created_at: datetime
+    updated_at: datetime
+    error: str | None = None
+
+
+class TestDetail(TestSummary):
+    """A test run including aggregate outcome summaries."""
+
+    languages: list[str] = Field(default_factory=list)
+    tests_run: int = 0
+    passed: int = 0
+    failed: int = 0
+    skipped: int = 0
+    succeeded: bool = False

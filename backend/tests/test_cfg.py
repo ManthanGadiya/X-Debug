@@ -20,6 +20,7 @@ def _edge_kinds(graph) -> set[str]:
 
 
 def test_linear_function_has_next_and_fallthrough() -> None:
+    """A linear function emits next, return, and fallthrough edges."""
     graph = _cfg("def f():\n" "    x = 1\n" "    y = x + 1\n" "    return y\n")
     kinds = _edge_kinds(graph)
     assert "next" in kinds
@@ -29,6 +30,7 @@ def test_linear_function_has_next_and_fallthrough() -> None:
 
 
 def test_if_else_produces_branches() -> None:
+    """If-else emits branch, true, false, and join edges."""
     graph = _cfg(
         "def f(x):\n"
         "    if x > 0:\n"
@@ -45,6 +47,7 @@ def test_if_else_produces_branches() -> None:
 
 
 def test_while_loop_has_back_edge() -> None:
+    """A while loop emits a back-edge and loop structure."""
     graph = _cfg(
         "def f():\n" "    i = 0\n" "    while i < 10:\n" "        i = i + 1\n" "    return i\n"
     )
@@ -56,6 +59,7 @@ def test_while_loop_has_back_edge() -> None:
 
 
 def test_for_loop_structure() -> None:
+    """A for loop emits body, done, and back-edge kinds."""
     graph = _cfg(
         "def f(items):\n"
         "    for item in items:\n"
@@ -69,6 +73,7 @@ def test_for_loop_structure() -> None:
 
 
 def test_try_except_has_exception_path() -> None:
+    """Try-except emits an exception edge and handler node."""
     graph = _cfg(
         "def f():\n"
         "    try:\n"
@@ -84,6 +89,7 @@ def test_try_except_has_exception_path() -> None:
 
 
 def test_multiple_functions_build_independently() -> None:
+    """Multiple functions build their own subgraphs in one CFG."""
     graph = _cfg(
         "def a():\n"
         "    return 1\n"
@@ -98,6 +104,7 @@ def test_multiple_functions_build_independently() -> None:
 
 
 def test_cfg_skips_non_python_modules() -> None:
+    """Non-Python modules produce an empty CFG."""
     module = parser.parse("pass\n", "main.py")
     module.language = Language.C
     graph = CFGBuilder().build([module], {module.path: "pass\n"})

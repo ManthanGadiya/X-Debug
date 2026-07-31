@@ -18,6 +18,7 @@ def _project() -> Project:
 
 
 def test_start_creates_queued_record() -> None:
+    """Starting an analysis creates a queued record."""
     record = _manager().start("proj-1")
 
     assert record.status == AnalysisStatus.QUEUED
@@ -26,6 +27,7 @@ def test_start_creates_queued_record() -> None:
 
 
 def test_run_transitions_to_ready() -> None:
+    """A completed analysis run transitions to ready."""
     manager = _manager()
     record = manager.start("proj-1")
     result = AnalysisService().analyze(_project())
@@ -37,6 +39,7 @@ def test_run_transitions_to_ready() -> None:
 
 
 def test_run_marks_failed_on_analysis_error() -> None:
+    """An analysis error marks the run as failed."""
     manager = _manager()
     record = manager.start("proj-1")
 
@@ -52,6 +55,7 @@ def test_run_marks_failed_on_analysis_error() -> None:
 
 
 def test_run_unknown_analysis_raises() -> None:
+    """Running an unknown analysis raises NotFoundError."""
     manager = _manager()
     try:
         manager.run("missing", lambda: None)
@@ -62,6 +66,7 @@ def test_run_unknown_analysis_raises() -> None:
 
 
 def test_get_unknown_analysis_raises() -> None:
+    """Fetching an unknown analysis raises NotFoundError."""
     manager = _manager()
     try:
         manager.get("missing")
@@ -72,12 +77,14 @@ def test_get_unknown_analysis_raises() -> None:
 
 
 def test_get_returns_record() -> None:
+    """Fetching a record returns the stored instance."""
     manager = _manager()
     record = manager.start("proj-1")
     assert manager.get(record.id) is record
 
 
 def test_repository_manager_tracks_projects() -> None:
+    """The repository manager stores and retrieves projects."""
     from app.projects.git import GitClient
 
     manager = RepositoryManager(
@@ -86,9 +93,10 @@ def test_repository_manager_tracks_projects() -> None:
         git_client=GitClient(timeout_seconds=1),
         loader=None,  # type: ignore[arg-type]
     )
-    manager._projects["proj-1"] = _project()
+    project = _project()
+    manager._projects["proj-1"] = project
 
-    assert manager.get_project("proj-1") == _project()
+    assert manager.get_project("proj-1") is project
     try:
         manager.get_project("missing")
     except NotFoundError as exc:

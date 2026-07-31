@@ -19,6 +19,7 @@ def _result() -> RuntimeAnalysis:
 
 
 def test_start_creates_queued_record() -> None:
+    """Starting a runtime run creates a queued record."""
     manager = RuntimeManager(service=_FakeAnalyzer())  # type: ignore[arg-type]
     record = manager.start("p1")
     assert record.id
@@ -28,6 +29,7 @@ def test_start_creates_queued_record() -> None:
 
 
 def test_run_transitions_to_ready() -> None:
+    """A completed runtime run transitions to ready."""
     manager = RuntimeManager(service=_FakeAnalyzer())  # type: ignore[arg-type]
     record = manager.start("p1")
     manager.run(record.id, _result)
@@ -37,6 +39,7 @@ def test_run_transitions_to_ready() -> None:
 
 
 def test_run_marks_failed_on_error() -> None:
+    """A failing runtime run marks the record failed."""
     manager = RuntimeManager(service=_FakeAnalyzer())  # type: ignore[arg-type]
 
     def explode() -> RuntimeAnalysis:
@@ -49,12 +52,14 @@ def test_run_marks_failed_on_error() -> None:
 
 
 def test_get_returns_record() -> None:
+    """Fetching a record returns the stored instance."""
     manager = RuntimeManager(service=_FakeAnalyzer())  # type: ignore[arg-type]
     record = manager.start("p1")
     assert manager.get(record.id) is record
 
 
 def test_get_unknown_raises() -> None:
+    """Fetching an unknown run raises NotFoundError."""
     manager = RuntimeManager(service=_FakeAnalyzer())  # type: ignore[arg-type]
     with pytest.raises(NotFoundError):
         manager.get("missing")
