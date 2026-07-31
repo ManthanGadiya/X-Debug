@@ -5,6 +5,32 @@
 
 ---
 
+## Current Status
+
+* **Milestone:** Phase 1 — Project Foundation
+* **Branch:** `develop`
+* **Completed:**
+  * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint — merged
+  * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check — merged
+  * Docker infrastructure: backend/frontend images + Compose with PostgreSQL and Neo4j
+  * CI workflow (GitHub Actions): backend lint/format/typecheck/tests + frontend lint/typecheck/format/test/build
+* **Next milestone:** Phase 2 — Repository upload and project loader
+
+Quick start:
+
+```sh
+# Backend (http://localhost:8000/docs)
+cd backend && pip install -e ".[dev]" && uvicorn app.main:app --reload
+
+# Frontend (http://localhost:5173)
+cd frontend && npm install && npm run dev
+
+# Or everything with Docker
+docker compose up --build
+```
+
+---
+
 ## 🚀 Overview
 
 XDebug is an **Explainable Debugging Platform** that helps developers identify **where a bug originated, why it happened, how it propagated through the system, and how to fix it**.

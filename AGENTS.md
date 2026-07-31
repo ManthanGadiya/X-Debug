@@ -197,6 +197,8 @@ research/confidence-engine
 # Commit Strategy
 
 Commit after every meaningful milestone.
+You don't need to commit everything at once.
+Commit often, without being like a beginner.
 
 Avoid massive commits.
 
@@ -254,6 +256,7 @@ Before merging verify:
 * no dead code
 * lint passes
 
+**push after the branch is finished**
 ---
 
 # Engineering Principles
