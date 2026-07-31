@@ -22,6 +22,8 @@ from app.projects.manager import RepositoryManager
 from app.runtime.manager import RuntimeManager
 from app.runtime.runner import RuntimeRunner
 from app.runtime.service import RuntimeAnalyzer
+from app.runtime.test_manager import TestManager
+from app.runtime.test_runner import TestRunner
 
 
 class Container:
@@ -34,6 +36,8 @@ class Container:
         self._analysis_manager: AnalysisManager | None = None
         self._runtime_analyzer: RuntimeAnalyzer | None = None
         self._runtime_manager: RuntimeManager | None = None
+        self._test_runner: TestRunner | None = None
+        self._test_manager: TestManager | None = None
 
     @property
     def settings(self) -> Settings:
@@ -95,6 +99,23 @@ class Container:
         if self._runtime_manager is None:
             self._runtime_manager = RuntimeManager(service=self.runtime_analyzer)
         return self._runtime_manager
+
+    @property
+    def test_runner(self) -> TestRunner:
+        """Return the lazily constructed test runner."""
+        if self._test_runner is None:
+            self._test_runner = TestRunner(
+                timeout_seconds=self._settings.runtime_timeout_seconds * 2,
+                max_output_chars=self._settings.max_output_chars,
+            )
+        return self._test_runner
+
+    @property
+    def test_manager(self) -> TestManager:
+        """Return the lazily constructed test manager."""
+        if self._test_manager is None:
+            self._test_manager = TestManager(service=self.test_runner)
+        return self._test_manager
 
 
 def get_container(request: Request) -> Container:
