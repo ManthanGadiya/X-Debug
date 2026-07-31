@@ -7,7 +7,7 @@
 
 ## Current Status
 
-* **Milestone:** Phase 2 — Repository Understanding
+* **Milestone:** Phase 3 — Static Analysis Engine
 * **Branch:** `develop`
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
@@ -15,7 +15,8 @@
   * Docker infrastructure: backend/frontend images + Compose with PostgreSQL and Neo4j
   * CI workflow (GitHub Actions): backend lint/format/typecheck/tests + frontend lint/typecheck/format/test/build
   * Repository ingestion: local zip upload, GitHub clone, language detection (Python/C/C++), ignore rules with `.gitignore` support, project loader producing a normalized repository representation (`POST /projects/upload`, `POST /projects/github`)
-* **Next milestone:** Phase 3 — Static Analysis Engine
+  * Static analysis engine: AST parsing for Python (stdlib `ast`) and C/C++ (tree-sitter), dependency graph, call graph, control flow graph, and data flow analysis, orchestrated by the analysis pipeline (`POST /analysis/start`, `GET /analysis/{id}`, `GET /analysis/{id}/graphs/{kind}`)
+* **Next milestone:** Phase 4 — Runtime Analysis Engine
 
 Quick start:
 
