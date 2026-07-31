@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 4 — Runtime Analysis Engine (Test Execution)
-* **Branch:** `develop` (feature: `feature/test-execution`)
+* **Milestone:** Phase 4 — Runtime Analysis Engine (Test Execution) — released
+* **Branch:** `main` (released from `develop`)
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
