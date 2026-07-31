@@ -12,6 +12,8 @@ from typing import Annotated, cast
 
 from fastapi import Depends, Request
 
+from app.analysis.knowledge import KnowledgeGraphBuilder
+from app.analysis.knowledge_manager import KnowledgeGraphManager
 from app.analysis.manager import AnalysisManager
 from app.analysis.service import AnalysisService
 from app.core.config import Settings, get_settings
@@ -34,6 +36,7 @@ class Container:
         self._repository_manager: RepositoryManager | None = None
         self._analysis_service: AnalysisService | None = None
         self._analysis_manager: AnalysisManager | None = None
+        self._knowledge_manager: KnowledgeGraphManager | None = None
         self._runtime_analyzer: RuntimeAnalyzer | None = None
         self._runtime_manager: RuntimeManager | None = None
         self._test_runner: TestRunner | None = None
@@ -80,6 +83,13 @@ class Container:
         if self._analysis_manager is None:
             self._analysis_manager = AnalysisManager(service=self.analysis_service)
         return self._analysis_manager
+
+    @property
+    def knowledge_manager(self) -> KnowledgeGraphManager:
+        """Return the lazily constructed knowledge graph manager."""
+        if self._knowledge_manager is None:
+            self._knowledge_manager = KnowledgeGraphManager(builder=KnowledgeGraphBuilder())
+        return self._knowledge_manager
 
     @property
     def runtime_analyzer(self) -> RuntimeAnalyzer:
