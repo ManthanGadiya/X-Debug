@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 3 — Static Analysis Engine
-* **Branch:** `develop`
+* **Milestone:** Phase 4 — Runtime Analysis Engine
+* **Branch:** `develop` (feature: `feature/runtime-analysis-engine`)
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
@@ -16,7 +16,8 @@
   * CI workflow (GitHub Actions): backend lint/format/typecheck/tests + frontend lint/typecheck/format/test/build
   * Repository ingestion: local zip upload, GitHub clone, language detection (Python/C/C++), ignore rules with `.gitignore` support, project loader producing a normalized repository representation (`POST /projects/upload`, `POST /projects/github`)
   * Static analysis engine: AST parsing for Python (stdlib `ast`) and C/C++ (tree-sitter), dependency graph, call graph, control flow graph, and data flow analysis, orchestrated by the analysis pipeline (`POST /analysis/start`, `GET /analysis/{id}`, `GET /analysis/{id}/graphs/{kind}`)
-* **Next milestone:** Phase 4 — Runtime Analysis Engine
+  * Runtime analysis engine: bounded subprocess execution with timeouts and output caps, Python tracing via `sys.settrace` (function execution order, call/return events, variable snapshots, exception and stack trace capture, execution timeline), C/C++ compile-and-run via the configured toolchain, entry-point detection per language (`POST /runtime/run`, `GET /runtime/{id}`, `GET /runtime/{id}/trace/{language}`)
+* **Next milestone:** Phase 4 completion — test execution and execution replay
 
 Quick start:
 
