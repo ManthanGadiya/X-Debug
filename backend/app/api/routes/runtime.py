@@ -3,18 +3,25 @@
 POST /runtime/run         — start an asynchronous runtime execution for a project
 GET  /runtime/{run_id}    — retrieve the lifecycle state and result summary
 GET  /runtime/{run_id}/trace/{language} — retrieve the execution trace for one language
+GET  /runtime/{run_id}/replay/{language} — overview of a language's replay timeline
+GET  /runtime/{run_id}/replay/{language}/step — navigate to one replay step
+GET  /runtime/{run_id}/replay/{language}/steps — filtered, paginated replay steps
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Path, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Path, Query, status
 
 from app.container import ContainerDep
 from app.runtime import RuntimeManager
 from app.runtime.manager import RuntimeRun, RuntimeStatus
 from app.runtime.model import RuntimeException, RuntimeResult
+from app.runtime.replay import ExecutionReplay, ReplayStep
 from app.runtime.service import RuntimeAnalyzer
 from app.schemas.runtime import (
+    ReplayStepListSchema,
+    ReplayStepSchema,
+    ReplaySummarySchema,
     RuntimeDetail,
     RuntimeExceptionSchema,
     RuntimeStartRequest,
@@ -81,6 +88,99 @@ def get_trace(
     return _to_trace_detail(language, result)
 
 
+@router.get(
+    "/{run_id}/replay/{language}",
+    response_model=ReplaySummarySchema,
+    summary="Overview of a language's replay timeline",
+)
+def get_replay(
+    run_id: str,
+    container: ContainerDep,
+    language: str = Path(..., pattern="^(Python|C|C\\+\\+)$"),
+) -> ReplaySummarySchema:
+    """Return a summary of the recorded timeline for ``language``."""
+    replay = _replay_for(container, run_id, language)
+    return ReplaySummarySchema(
+        language=language,
+        total_events=replay.total_events,
+        count_by_type=replay.count_by_type(),
+        function_order=replay.function_order(),
+        exception=_to_exception(replay.exception()),
+        max_stack_depth=replay.max_stack_depth(),
+        first_index=replay.first_index(),
+        last_index=replay.last_index(),
+    )
+
+
+@router.get(
+    "/{run_id}/replay/{language}/step",
+    response_model=ReplayStepSchema,
+    summary="Navigate to one replay step",
+)
+def get_replay_step(
+    run_id: str,
+    container: ContainerDep,
+    language: str = Path(..., pattern="^(Python|C|C\\+\\+)$"),
+    index: int = Query(0, ge=0, description="Zero-based step index to navigate to"),
+) -> ReplayStepSchema:
+    """Return the replay step at ``index`` with its navigation links."""
+    replay = _replay_for(container, run_id, language)
+    try:
+        step = replay.step(index)
+    except IndexError:
+        raise HTTPException(status_code=404, detail=f"No replay step at index {index}") from None
+    return _to_step(step)
+
+
+@router.get(
+    "/{run_id}/replay/{language}/steps",
+    response_model=ReplayStepListSchema,
+    summary="Filter and paginate replay steps",
+)
+def get_replay_steps(
+    run_id: str,
+    container: ContainerDep,
+    language: str = Path(..., pattern="^(Python|C|C\\+\\+)$"),
+    event_type: str | None = Query(
+        None,
+        description="Only steps of this event type (call, return, line, exception)",
+    ),
+    function: str | None = Query(
+        None, description="Only steps whose function name contains this value"
+    ),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+) -> ReplayStepListSchema:
+    """Return a filtered, paginated slice of the replay timeline."""
+    replay = _replay_for(container, run_id, language)
+    total, steps = replay.steps(
+        event_type=event_type,
+        function=function,
+        offset=offset,
+        limit=limit,
+    )
+    return ReplayStepListSchema(
+        language=language,
+        total=total,
+        offset=offset,
+        limit=len(steps),
+        items=[_to_step(step) for step in steps],
+    )
+
+
+def _replay_for(container: ContainerDep, run_id: str, language: str) -> ExecutionReplay:
+    record = container.runtime_manager.get(run_id)
+    if record.status != RuntimeStatus.READY or record.result is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Runtime run is not ready (status={record.status.value})",
+        )
+    result = record.result.results.get(language)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"No runtime result for language {language}")
+    return ExecutionReplay(result.events, exception=result.exception)
+
+
 def _to_summary(record: RuntimeRun) -> RuntimeSummary:
     return RuntimeSummary(
         id=record.id,
@@ -137,3 +237,25 @@ def _to_exception(exception: RuntimeException | None) -> RuntimeExceptionSchema 
     if exception is None:
         return None
     return RuntimeExceptionSchema(type=exception.type, message=exception.message)
+
+
+def _to_step(step: ReplayStep) -> ReplayStepSchema:
+    event = step.event
+    return ReplayStepSchema(
+        index=step.index,
+        event=TraceEventSchema(
+            type=event.type.value,
+            function=event.function,
+            filename=event.filename,
+            lineno=event.lineno,
+            timestamp=event.timestamp,
+            depth=event.depth,
+            variables=event.variables,
+            exception=event.exception,
+        ),
+        position=step.position,
+        total=step.total,
+        stack_depth=step.stack_depth,
+        previous_index=step.previous_index,
+        next_index=step.next_index,
+    )
