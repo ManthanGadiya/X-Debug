@@ -9,6 +9,12 @@ from app.schemas.analysis import (
     GraphNodeSchema,
 )
 from app.schemas.health import HealthResponse
+from app.schemas.knowledge import (
+    KnowledgeBuildRequest,
+    KnowledgeDetail,
+    KnowledgeStats,
+    KnowledgeSummary,
+)
 from app.schemas.projects import (
     GitHubCloneRequest,
     ProjectDetail,
@@ -25,6 +31,10 @@ __all__ = [
     "GraphEdgeSchema",
     "GraphNodeSchema",
     "HealthResponse",
+    "KnowledgeBuildRequest",
+    "KnowledgeDetail",
+    "KnowledgeStats",
+    "KnowledgeSummary",
     "ProjectDetail",
     "ProjectSummary",
     "SourceFile",

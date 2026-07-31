@@ -93,6 +93,20 @@ class AnalysisManager:
         """Return the record for ``analysis_id`` or raise if unknown."""
         return self._get_or_raise(analysis_id)
 
+    def latest_ready(self, project_id: str) -> AnalysisRecord | None:
+        """Return the most recently completed result for ``project_id``."""
+        with self._lock:
+            ready = [
+                record
+                for record in self._records.values()
+                if record.project_id == project_id
+                and record.status == AnalysisStatus.READY
+                and record.result is not None
+            ]
+        if not ready:
+            return None
+        return max(reversed(ready), key=lambda record: record.updated_at)
+
     def _get_or_raise(self, analysis_id: str) -> AnalysisRecord:
         with self._lock:
             record = self._records.get(analysis_id)

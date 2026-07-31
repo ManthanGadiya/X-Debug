@@ -84,6 +84,20 @@ class RuntimeManager:
         """Return the record for ``run_id`` or raise if unknown."""
         return self._get_or_raise(run_id)
 
+    def latest_ready(self, project_id: str) -> RuntimeRun | None:
+        """Return the most recently completed result for ``project_id``."""
+        with self._lock:
+            ready = [
+                record
+                for record in self._records.values()
+                if record.project_id == project_id
+                and record.status == RuntimeStatus.READY
+                and record.result is not None
+            ]
+        if not ready:
+            return None
+        return max(reversed(ready), key=lambda record: record.updated_at)
+
     def _get_or_raise(self, run_id: str) -> RuntimeRun:
         with self._lock:
             record = self._records.get(run_id)

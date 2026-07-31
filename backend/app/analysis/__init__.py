@@ -11,6 +11,13 @@ from app.analysis.dependency import DependencyGraphBuilder as DependencyGraphBui
 from app.analysis.graph import Graph as Graph
 from app.analysis.graph import GraphEdge as GraphEdge
 from app.analysis.graph import GraphNode as GraphNode
+from app.analysis.knowledge import KnowledgeEdgeKind as KnowledgeEdgeKind
+from app.analysis.knowledge import KnowledgeGraph as KnowledgeGraph
+from app.analysis.knowledge import KnowledgeGraphBuilder as KnowledgeGraphBuilder
+from app.analysis.knowledge import KnowledgeNodeKind as KnowledgeNodeKind
+from app.analysis.knowledge_manager import KnowledgeBuildStatus as KnowledgeBuildStatus
+from app.analysis.knowledge_manager import KnowledgeGraphManager as KnowledgeGraphManager
+from app.analysis.knowledge_manager import KnowledgeRecord as KnowledgeRecord
 from app.analysis.manager import AnalysisManager as AnalysisManager
 from app.analysis.manager import AnalysisRecord, AnalysisStatus
 from app.analysis.model import ClassDef, FunctionDef, ImportRecord, ModuleAST, VariableRecord
@@ -35,6 +42,13 @@ __all__ = [
     "GraphEdge",
     "GraphNode",
     "ImportRecord",
+    "KnowledgeBuildStatus",
+    "KnowledgeEdgeKind",
+    "KnowledgeGraph",
+    "KnowledgeGraphBuilder",
+    "KnowledgeGraphManager",
+    "KnowledgeNodeKind",
+    "KnowledgeRecord",
     "ModuleAST",
     "Parser",
     "ParserRegistry",
