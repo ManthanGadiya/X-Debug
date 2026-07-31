@@ -52,6 +52,8 @@ def _module_index(modules: list[ModuleAST]) -> dict[str, ModuleAST]:
 
 
 def _resolve_import(module_name: str, index: dict[str, ModuleAST]) -> ModuleAST | None:
+    if module_name in index:
+        return index[module_name]
     parts = module_name.split(".")
     for size in range(len(parts), 0, -1):
         candidate = "/".join(parts[:size])

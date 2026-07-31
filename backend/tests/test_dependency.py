@@ -63,3 +63,28 @@ def test_duplicate_imports_are_deduplicated() -> None:
     ]
     graph = DependencyGraphBuilder().build(modules)
     assert graph.edge_count == 1
+
+
+def test_c_include_resolves_to_project_file() -> None:
+    from app.analysis.parsers.c import CParser
+
+    c_parser = CParser()
+    modules = [
+        c_parser.parse('#include "mylib.h"\n', "main.c"),
+        c_parser.parse("int helper(void);\n", "mylib.h"),
+    ]
+    graph = DependencyGraphBuilder().build(modules)
+    (edge,) = graph.edges
+    assert edge.source == "main.c"
+    assert edge.target == "mylib.h"
+    assert edge.kind == "imports"
+
+
+def test_system_include_creates_no_edge() -> None:
+    from app.analysis.parsers.c import CParser
+
+    c_parser = CParser()
+    modules = [c_parser.parse("#include <stdio.h>\n", "main.c")]
+    graph = DependencyGraphBuilder().build(modules)
+    assert graph.edge_count == 0
+    assert graph.node_count == 1

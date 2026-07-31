@@ -82,3 +82,26 @@ def test_partial_failure_records_unparsed(tmp_path: Path) -> None:
     assert result.failed_file_count == 1
     assert "bad.py" in result.unparsed_files
     assert result.cfg is not None
+
+
+def test_c_files_are_parsed_with_python(tmp_path: Path) -> None:
+    root = tmp_path / "mixed"
+    root.mkdir()
+    (root / "main.c").write_text(
+        '#include "util.h"\nint main(void) { return helper(); }\n', encoding="utf-8"
+    )
+    (root / "util.h").write_text("int helper(void);\n", encoding="utf-8")
+    (root / "app.py").write_text("from util import helper\n", encoding="utf-8")
+
+    loader = ProjectLoader(max_size_bytes=1024 * 1024)
+    project = loader.load(root, project_id="proj-3", name="mixed", source="upload")
+    result = AnalysisService().analyze(project)
+
+    assert result.parsed_file_count == 3
+    assert {module.path for module in result.modules} == {"main.c", "util.h", "app.py"}
+    assert result.dependency_graph is not None
+    edges = {(e.source, e.target) for e in result.dependency_graph.edges}
+    assert ("main.c", "util.h") in edges
+    assert result.call_graph is not None
+    call_nodes = {node.label for node in result.call_graph.nodes.values()}
+    assert "helper" in call_nodes
