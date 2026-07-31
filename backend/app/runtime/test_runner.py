@@ -20,7 +20,13 @@ from pathlib import Path
 from app.core.logging import StructuredLogger, get_logger
 from app.projects.languages import Language
 from app.projects.loader import Project, SourceFileRecord
-from app.runtime.model import TestCase, TestCaseOutcome, TestExecution, TestSuite
+from app.runtime.model import (
+    RuntimeStatus,
+    TestCase,
+    TestCaseOutcome,
+    TestExecution,
+    TestSuite,
+)
 from app.runtime.runner import RuntimeRunner, _truncate
 
 logger = get_logger(__name__)
@@ -120,6 +126,20 @@ class TestRunner:
                 else self._runner.run_cpp(entry, root)
             )
             suite_duration += run.duration_seconds
+            if (
+                run.status == RuntimeStatus.FAILED
+                and run.error
+                and "Compiler not found" in run.error
+            ):
+                return TestSuite(
+                    language=Language.C.value,
+                    tests_run=0,
+                    passed=0,
+                    failed=0,
+                    skipped=0,
+                    duration_seconds=suite_duration,
+                    error=run.error,
+                )
             passed = run.exit_code == 0
             if not passed:
                 failures += 1
