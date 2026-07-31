@@ -93,9 +93,10 @@ def test_repository_manager_tracks_projects() -> None:
         git_client=GitClient(timeout_seconds=1),
         loader=None,  # type: ignore[arg-type]
     )
-    manager._projects["proj-1"] = _project()
+    project = _project()
+    manager._projects["proj-1"] = project
 
-    assert manager.get_project("proj-1") == _project()
+    assert manager.get_project("proj-1") is project
     try:
         manager.get_project("missing")
     except NotFoundError as exc:
