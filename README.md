@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 5 — Knowledge Graph — in progress
-* **Branch:** `develop` (feature: `feature/knowledge-graph`)
+* **Milestone:** Phase 5 — Knowledge Graph — complete
+* **Branch:** `main` (released from `develop`)
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
@@ -19,7 +19,7 @@
   * Runtime analysis engine: bounded subprocess execution with timeouts and output caps, Python tracing via `sys.settrace` (function execution order, call/return events, variable snapshots, exception and stack trace capture, execution timeline), C/C++ compile-and-run via the configured toolchain, entry-point detection per language (`POST /runtime/run`, `GET /runtime/{id}`, `GET /runtime/{id}/trace/{language}`)
   * Test execution: runs a project's available tests in bounded child processes — Python through pytest with a JUnit XML report (per-case outcomes and durations), C/C++ test mains compiled and executed with the configured toolchain, with per-language suites and results (`POST /tests/run`, `GET /tests/{id}`, `GET /tests/{id}/results/{language}`)
   * Execution replay: deterministic playback of a recorded run — a navigable timeline with per-step position, reconstructed call-stack depth, variable snapshots, and forward/backward stepping plus filtered, paginated browsing (`GET /runtime/{id}/replay/{language}`, `GET /runtime/{id}/replay/{language}/step`, `GET /runtime/{id}/replay/{language}/steps`)
-  * Knowledge graph (in progress): merges AST structure, dependency, call graph, control flow and data flow with runtime execution evidence into one unified per-project graph, in memory — node kinds (project/module/class/function/method/variable/condition/loop/exception) and edge kinds (calls/imports/defines/inherits/reads/writes/returns/throws/executes_after/flows_to) follow the documented evidence graph taxonomy, with per-source provenance (`POST /knowledge/build`, `GET /knowledge/{project_id}`)
+  * Knowledge graph: merges AST structure, dependency, call graph, control flow and data flow with runtime execution evidence into one unified per-project graph, in memory — node kinds (project/module/class/function/method/variable/condition/loop/exception) and edge kinds (calls/imports/defines/inherits/reads/writes/returns/throws/executes_after/flows_to) follow the documented evidence graph taxonomy, with per-source provenance (`POST /knowledge/build`, `GET /knowledge/{project_id}`)
 * **Next milestone:** Phase 6 — Bug Localization Engine
 
 Quick start:
