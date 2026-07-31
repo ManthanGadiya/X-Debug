@@ -126,3 +126,38 @@ class TestDetail(TestSummary):
     failed: int = 0
     skipped: int = 0
     succeeded: bool = False
+
+
+class ReplayStepSchema(BaseModel):
+    """One navigable position in the replay timeline."""
+
+    index: int
+    event: TraceEventSchema
+    position: int
+    total: int
+    stack_depth: int
+    previous_index: int | None = None
+    next_index: int | None = None
+
+
+class ReplaySummarySchema(BaseModel):
+    """Overview of a language's replay timeline."""
+
+    language: str
+    total_events: int = 0
+    count_by_type: dict[str, int] = Field(default_factory=dict)
+    function_order: list[str] = Field(default_factory=list)
+    exception: RuntimeExceptionSchema | None = None
+    max_stack_depth: int = 0
+    first_index: int | None = None
+    last_index: int | None = None
+
+
+class ReplayStepListSchema(BaseModel):
+    """A filtered, paginated slice of the replay timeline."""
+
+    language: str
+    total: int = 0
+    offset: int = 0
+    limit: int = 0
+    items: list[ReplayStepSchema] = Field(default_factory=list)
