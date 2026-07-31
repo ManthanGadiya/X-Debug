@@ -1,0 +1,65 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      XDEBUG_ENVIRONMENT: production
+      XDEBUG_DATABASE_URL: postgresql://xdebug:xdebug@postgres:5432/xdebug
+      XDEBUG_NEO4J_URI: bolt://neo4j:7687
+      XDEBUG_NEO4J_USER: neo4j
+      XDEBUG_NEO4J_PASSWORD: xdebug
+      XDEBUG_CORS_ORIGINS: '["http://localhost"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - neo4j
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: xdebug
+      POSTGRES_PASSWORD: xdebug
+      POSTGRES_DB: xdebug
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xdebug"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/xdebug
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  neo4j_data:
