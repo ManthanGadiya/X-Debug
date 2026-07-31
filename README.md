@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 4 — Runtime Analysis Engine
-* **Branch:** `develop` (feature: `feature/runtime-analysis-engine`)
+* **Milestone:** Phase 4 — Runtime Analysis Engine (Test Execution)
+* **Branch:** `develop` (feature: `feature/test-execution`)
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
@@ -17,7 +17,8 @@
   * Repository ingestion: local zip upload, GitHub clone, language detection (Python/C/C++), ignore rules with `.gitignore` support, project loader producing a normalized repository representation (`POST /projects/upload`, `POST /projects/github`)
   * Static analysis engine: AST parsing for Python (stdlib `ast`) and C/C++ (tree-sitter), dependency graph, call graph, control flow graph, and data flow analysis, orchestrated by the analysis pipeline (`POST /analysis/start`, `GET /analysis/{id}`, `GET /analysis/{id}/graphs/{kind}`)
   * Runtime analysis engine: bounded subprocess execution with timeouts and output caps, Python tracing via `sys.settrace` (function execution order, call/return events, variable snapshots, exception and stack trace capture, execution timeline), C/C++ compile-and-run via the configured toolchain, entry-point detection per language (`POST /runtime/run`, `GET /runtime/{id}`, `GET /runtime/{id}/trace/{language}`)
-* **Next milestone:** Phase 4 completion — test execution and execution replay
+  * Test execution: runs a project's available tests in bounded child processes — Python through pytest with a JUnit XML report (per-case outcomes and durations), C/C++ test mains compiled and executed with the configured toolchain, with per-language suites and results (`POST /tests/run`, `GET /tests/{id}`, `GET /tests/{id}/results/{language}`)
+* **Next milestone:** Phase 4 completion — execution replay
 
 Quick start:
 
