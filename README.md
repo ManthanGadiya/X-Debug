@@ -7,7 +7,7 @@
 
 ## Current Status
 
-* **Milestone:** Phase 4 — Runtime Analysis Engine (Test Execution) — released
+* **Milestone:** Phase 4 — Runtime Analysis Engine — complete
 * **Branch:** `main` (released from `develop`)
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
@@ -18,7 +18,8 @@
   * Static analysis engine: AST parsing for Python (stdlib `ast`) and C/C++ (tree-sitter), dependency graph, call graph, control flow graph, and data flow analysis, orchestrated by the analysis pipeline (`POST /analysis/start`, `GET /analysis/{id}`, `GET /analysis/{id}/graphs/{kind}`)
   * Runtime analysis engine: bounded subprocess execution with timeouts and output caps, Python tracing via `sys.settrace` (function execution order, call/return events, variable snapshots, exception and stack trace capture, execution timeline), C/C++ compile-and-run via the configured toolchain, entry-point detection per language (`POST /runtime/run`, `GET /runtime/{id}`, `GET /runtime/{id}/trace/{language}`)
   * Test execution: runs a project's available tests in bounded child processes — Python through pytest with a JUnit XML report (per-case outcomes and durations), C/C++ test mains compiled and executed with the configured toolchain, with per-language suites and results (`POST /tests/run`, `GET /tests/{id}`, `GET /tests/{id}/results/{language}`)
-* **Next milestone:** Phase 4 completion — execution replay
+  * Execution replay: deterministic playback of a recorded run — a navigable timeline with per-step position, reconstructed call-stack depth, variable snapshots, and forward/backward stepping plus filtered, paginated browsing (`GET /runtime/{id}/replay/{language}`, `GET /runtime/{id}/replay/{language}/step`, `GET /runtime/{id}/replay/{language}/steps`)
+* **Next milestone:** Phase 5 — Knowledge Graph
 
 Quick start:
 

@@ -16,6 +16,8 @@ from app.runtime.model import TestExecution as TestExecution
 from app.runtime.model import TestSuite as TestSuite
 from app.runtime.model import TraceEvent as TraceEvent
 from app.runtime.model import TraceEventType as TraceEventType
+from app.runtime.replay import ExecutionReplay as ExecutionReplay
+from app.runtime.replay import ReplayStep as ReplayStep
 from app.runtime.runner import RuntimeRunner as RuntimeRunner
 from app.runtime.service import RuntimeAnalysis as RuntimeAnalysis
 from app.runtime.service import RuntimeAnalyzer as RuntimeAnalyzer
@@ -24,6 +26,7 @@ from app.runtime.test_manager import TestRun as TestRun
 from app.runtime.test_runner import TestRunner as TestRunner
 
 __all__ = [
+    "ExecutionReplay",
     "RuntimeAnalysis",
     "RuntimeAnalyzer",
     "RuntimeException",
@@ -32,6 +35,7 @@ __all__ = [
     "RuntimeRunner",
     "RuntimeRun",
     "RuntimeStatus",
+    "ReplayStep",
     "TestCase",
     "TestCaseOutcome",
     "TestExecution",
