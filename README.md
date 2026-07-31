@@ -22,16 +22,37 @@
 
 Quick start:
 
+**Requirements:** Python 3.12+, Node.js 24+, and Docker (optional, for the full stack).
+
+### Backend
+
 ```sh
-# Backend (http://localhost:8000/docs)
-cd backend && pip install -e ".[dev]" && uvicorn app.main:app --reload
+cd backend
+python -m venv .venv
+.venv\Scripts\activate        # Windows · macOS/Linux: source .venv/bin/activate
+pip install -e ".[dev]"
+uvicorn app.main:app --reload
+```
 
-# Frontend (http://localhost:5173)
-cd frontend && npm install && npm run dev
+The API runs at **http://localhost:8000** with interactive docs at **http://localhost:8000/docs**. No configuration is required — the backend boots with safe defaults and writes analysis artifacts under `backend/.xdebug-workspace`.
 
-# Or everything with Docker
+### Frontend
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+The dashboard runs at **http://localhost:5173** and connects to the backend automatically.
+
+### Full stack with Docker
+
+```sh
 docker compose up --build
 ```
+
+Starts the backend, frontend, PostgreSQL, and Neo4j together.
 
 ---
 
