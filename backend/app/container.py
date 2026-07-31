@@ -12,6 +12,8 @@ from typing import Annotated, cast
 
 from fastapi import Depends, Request
 
+from app.analysis.manager import AnalysisManager
+from app.analysis.service import AnalysisService
 from app.core.config import Settings, get_settings
 from app.core.logging import StructuredLogger, get_logger
 from app.projects.git import GitClient
@@ -25,6 +27,8 @@ class Container:
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or get_settings()
         self._repository_manager: RepositoryManager | None = None
+        self._analysis_service: AnalysisService | None = None
+        self._analysis_manager: AnalysisManager | None = None
 
     @property
     def settings(self) -> Settings:
@@ -53,6 +57,20 @@ class Container:
                 loader=loader,
             )
         return self._repository_manager
+
+    @property
+    def analysis_service(self) -> AnalysisService:
+        """Return the lazily constructed static analysis service."""
+        if self._analysis_service is None:
+            self._analysis_service = AnalysisService()
+        return self._analysis_service
+
+    @property
+    def analysis_manager(self) -> AnalysisManager:
+        """Return the lazily constructed analysis manager."""
+        if self._analysis_manager is None:
+            self._analysis_manager = AnalysisManager(service=self.analysis_service)
+        return self._analysis_manager
 
 
 def get_container(request: Request) -> Container:

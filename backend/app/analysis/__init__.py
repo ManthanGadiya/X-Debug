@@ -11,6 +11,8 @@ from app.analysis.dependency import DependencyGraphBuilder as DependencyGraphBui
 from app.analysis.graph import Graph as Graph
 from app.analysis.graph import GraphEdge as GraphEdge
 from app.analysis.graph import GraphNode as GraphNode
+from app.analysis.manager import AnalysisManager as AnalysisManager
+from app.analysis.manager import AnalysisRecord, AnalysisStatus
 from app.analysis.model import ClassDef, FunctionDef, ImportRecord, ModuleAST, VariableRecord
 from app.analysis.parsers.base import Parser as Parser
 from app.analysis.parsers.base import ParserRegistry as ParserRegistry
@@ -18,8 +20,11 @@ from app.analysis.service import AnalysisResult
 from app.analysis.service import AnalysisService as AnalysisService
 
 __all__ = [
+    "AnalysisManager",
+    "AnalysisRecord",
     "AnalysisResult",
     "AnalysisService",
+    "AnalysisStatus",
     "CallGraphBuilder",
     "CFGBuilder",
     "ClassDef",
