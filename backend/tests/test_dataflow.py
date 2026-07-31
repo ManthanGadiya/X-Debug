@@ -20,6 +20,7 @@ def _edges(graph, kind: str):
 
 
 def test_parameters_become_variables() -> None:
+    """Function parameters become variable nodes."""
     graph = _dfg("def f(x, y):\n    return x + y\n")
     params = _edges(graph, "parameter")
     assert {edge.target for edge in params} == {"main.py::f::x", "main.py::f::y"}
@@ -27,30 +28,35 @@ def test_parameters_become_variables() -> None:
 
 
 def test_assignments_are_definitions() -> None:
+    """Assignments produce definition edges."""
     graph = _dfg("def f():\n    result = compute()\n    return result\n")
     defines = _edges(graph, "defines")
     assert {edge.target for edge in defines} == {"main.py::f::result"}
 
 
 def test_reads_track_name_uses() -> None:
+    """Name uses produce read edges."""
     graph = _dfg("def f(x):\n    y = x * 2\n    return y\n")
     reads = _edges(graph, "reads")
     assert {edge.target for edge in reads} == {"main.py::f::x", "main.py::f::y"}
 
 
 def test_returns_link_to_variables() -> None:
+    """Return statements link to the returned variables."""
     graph = _dfg("def f():\n    value = 1\n    return value\n")
     returns = _edges(graph, "returns")
     assert returns and all(edge.target == "main.py::f::value" for edge in returns)
 
 
 def test_parameter_reassignment_is_both_read_and_def() -> None:
+    """Reassigning a parameter produces both a read and a definition."""
     graph = _dfg("def f(x):\n    x = x + 1\n    return x\n")
     assert _edges(graph, "defines")
     assert _edges(graph, "reads")
 
 
 def test_skips_non_python_modules() -> None:
+    """Non-Python modules produce an empty data flow graph."""
     module = parser.parse("def f():\n    pass\n", "main.py")
     module.language = Language.C
     graph = DataFlowAnalyzer().build([module], {module.path: "int f(void) {}"})
@@ -58,5 +64,6 @@ def test_skips_non_python_modules() -> None:
 
 
 def test_empty_function_has_no_edges() -> None:
+    """An empty function produces no data flow edges."""
     graph = _dfg("def f():\n    pass\n")
     assert graph.edge_count == 0

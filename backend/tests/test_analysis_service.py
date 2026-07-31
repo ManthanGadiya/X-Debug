@@ -33,6 +33,7 @@ def _make_project(tmp_path: Path) -> tuple[ProjectLoader, Project]:
 
 
 def test_analysis_result_counts(tmp_path: Path) -> None:
+    """The analysis reports parsed and failed file counts."""
     _, project = _make_project(tmp_path)
     result = AnalysisService().analyze(project)
     assert result.parsed_file_count == 2
@@ -41,6 +42,7 @@ def test_analysis_result_counts(tmp_path: Path) -> None:
 
 
 def test_all_graphs_built(tmp_path: Path) -> None:
+    """All four static graphs are produced for a project."""
     _, project = _make_project(tmp_path)
     result = AnalysisService().analyze(project)
     assert result.dependency_graph is not None
@@ -54,6 +56,7 @@ def test_all_graphs_built(tmp_path: Path) -> None:
 
 
 def test_dependency_edge_across_modules(tmp_path: Path) -> None:
+    """A cross-module import creates a dependency edge."""
     _, project = _make_project(tmp_path)
     result = AnalysisService().analyze(project)
     assert result.dependency_graph is not None
@@ -62,6 +65,7 @@ def test_dependency_edge_across_modules(tmp_path: Path) -> None:
 
 
 def test_skips_unsupported_files_and_languages(tmp_path: Path) -> None:
+    """Unsupported files are excluded from parsing."""
     _, project = _make_project(tmp_path)
     assert project.source_file_count == 2
     result = AnalysisService().analyze(project)
@@ -69,6 +73,7 @@ def test_skips_unsupported_files_and_languages(tmp_path: Path) -> None:
 
 
 def test_partial_failure_records_unparsed(tmp_path: Path) -> None:
+    """A file that fails to parse is recorded as unparsed."""
     root = tmp_path / "broken"
     root.mkdir()
     (root / "good.py").write_text("x = 1\n", encoding="utf-8")
@@ -85,6 +90,7 @@ def test_partial_failure_records_unparsed(tmp_path: Path) -> None:
 
 
 def test_c_files_are_parsed_with_python(tmp_path: Path) -> None:
+    """C sources are parsed alongside Python in a mixed project."""
     root = tmp_path / "mixed"
     root.mkdir()
     (root / "main.c").write_text(

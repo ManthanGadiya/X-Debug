@@ -11,6 +11,7 @@ def _parse(source: str, path: str = "main.py"):
 
 
 def test_parses_imports() -> None:
+    """Import statements are recorded with names."""
     module = _parse(
         "import os\nfrom collections import defaultdict, OrderedDict\nfrom pkg import mod as m\n"
     )
@@ -22,6 +23,7 @@ def test_parses_imports() -> None:
 
 
 def test_parses_functions_with_params_and_calls() -> None:
+    """Functions are extracted with parameters and calls."""
     module = _parse(
         "def greet(name, greeting='hi'):\n"
         "    return format(greeting, name)\n"
@@ -35,6 +37,7 @@ def test_parses_functions_with_params_and_calls() -> None:
 
 
 def test_parses_classes_with_bases_and_methods() -> None:
+    """Classes are extracted with bases and methods."""
     module = _parse(
         "class Animal(Base, Mixin):\n"
         "    def speak(self):\n"
@@ -51,6 +54,7 @@ def test_parses_classes_with_bases_and_methods() -> None:
 
 
 def test_parses_variables() -> None:
+    """Module-scope variables are recorded with their scope."""
     module = _parse("x = 1\ny, z = (2, 3)\nclass C:\n    value = 5\n")
     assert [(record.name, record.scope) for record in module.variables] == [
         ("x", "module"),
@@ -60,6 +64,7 @@ def test_parses_variables() -> None:
 
 
 def test_all_functions_includes_methods() -> None:
+    """all_functions includes top-level and class methods."""
     module = _parse(
         "def top():\n    pass\n" "class C:\n" "    def method(self):\n" "        pass\n"
     )
@@ -70,12 +75,14 @@ def test_all_functions_includes_methods() -> None:
 
 
 def test_parses_decorators() -> None:
+    """Function decorators are recorded."""
     module = _parse("@app.route('/')\ndef index():\n    pass\n")
     (function,) = module.functions
     assert function.decorators == ["app.route"]
 
 
 def test_parses_async_functions() -> None:
+    """Async functions and awaited calls are recorded."""
     module = _parse("async def fetch():\n    return await get()\n")
     (function,) = module.functions
     assert function.name == "fetch"
@@ -83,12 +90,14 @@ def test_parses_async_functions() -> None:
 
 
 def test_language_is_python() -> None:
+    """Parsed modules are tagged with the Python language."""
     module = _parse("pass\n")
     assert module.language == Language.PYTHON
     assert module.path == "main.py"
 
 
 def test_invalid_syntax_raises() -> None:
+    """Invalid source raises a SyntaxError."""
     import pytest
 
     with pytest.raises(SyntaxError):

@@ -13,6 +13,7 @@ def _module(source: str, path: str):
 
 
 def test_calls_between_functions() -> None:
+    """A call between functions produces an edge."""
     modules = [
         _module(
             "def main():\n    return helper()\ndef helper():\n    return 1\n",
@@ -27,6 +28,7 @@ def test_calls_between_functions() -> None:
 
 
 def test_method_calls_resolve_within_class() -> None:
+    """A method call resolves within the owning class."""
     modules = [
         _module(
             "class Service:\n"
@@ -45,6 +47,7 @@ def test_method_calls_resolve_within_class() -> None:
 
 
 def test_external_call_is_recorded() -> None:
+    """An external call is recorded against external::."""
     modules = [_module("def main():\n    return len([])\n", "main.py")]
     graph = CallGraphBuilder().build(modules)
     (edge,) = graph.edges
@@ -54,6 +57,7 @@ def test_external_call_is_recorded() -> None:
 
 
 def test_call_targets_across_files_resolve_by_name() -> None:
+    """Calls resolve to definitions in other files."""
     modules = [
         _module("def main():\n    return render()\n", "app/main.py"),
         _module("def render():\n    return 'x'\n", "app/ui.py"),
@@ -65,6 +69,7 @@ def test_call_targets_across_files_resolve_by_name() -> None:
 
 
 def test_node_count_includes_all_functions() -> None:
+    """Every function and method becomes a node."""
     modules = [
         _module(
             "def a():\n    pass\ndef b():\n    pass\nclass C:\n    def m(self):\n        pass\n",
