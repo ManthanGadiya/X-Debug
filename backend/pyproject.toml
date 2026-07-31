@@ -23,6 +23,7 @@ classifiers = [
 dependencies = [
     "fastapi>=0.115,<1.0",
     "httpx>=0.28,<1.0",
+    "pathspec>=0.12,<1.0",
     "pydantic>=2.10,<3.0",
     "pydantic-settings>=2.7,<3.0",
     "python-multipart>=0.0.20,<1.0",
@@ -49,6 +50,7 @@ testpaths = ["tests"]
 line-length = 100
 target-version = "py312"
 src = ["app", "tests"]
+exclude = [".xdebug-workspace"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "T20", "D"]
