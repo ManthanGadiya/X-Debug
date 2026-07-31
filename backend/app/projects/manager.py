@@ -13,7 +13,7 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 
-from app.core.errors import ValidationError
+from app.core.errors import NotFoundError, ValidationError
 from app.core.logging import get_logger
 from app.projects.git import GitClient
 from app.projects.loader import Project, ProjectLoader
@@ -35,6 +35,7 @@ class RepositoryManager:
         self._max_repository_size_bytes = max_repository_size_bytes
         self._git_client = git_client
         self._loader = loader
+        self._projects: dict[str, Project] = {}
 
     def ingest_upload(self, filename: str, content: bytes) -> Project:
         """Ingest a local repository uploaded as a zip archive."""
@@ -66,12 +67,14 @@ class RepositoryManager:
 
         root = _detect_single_root(staging_dir)
         name = _archive_name(filename)
-        return self._loader.load(
+        project = self._loader.load(
             root,
             project_id=project_id,
             name=name,
             source="upload",
         )
+        self._projects[project.id] = project
+        return project
 
     def ingest_github(self, url: str) -> Project:
         """Clone ``url`` and ingest the resulting repository."""
@@ -83,12 +86,25 @@ class RepositoryManager:
 
         root = _detect_single_root(clone_dir)
         name = _github_repo_name(url)
-        return self._loader.load(
+        project = self._loader.load(
             root,
             project_id=project_id,
             name=name,
             source="github",
         )
+        self._projects[project.id] = project
+        return project
+
+    def get_project(self, project_id: str) -> Project:
+        """Return the previously ingested project or raise if unknown."""
+        try:
+            return self._projects[project_id]
+        except KeyError:
+            raise NotFoundError(
+                reason="Project not found",
+                module="Repository Manager",
+                detail={"project_id": project_id},
+            ) from None
 
     def _extract_zip(self, content: bytes, destination: Path) -> None:
         destination.mkdir(parents=True, exist_ok=True)
