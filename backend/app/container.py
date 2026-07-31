@@ -19,6 +19,9 @@ from app.core.logging import StructuredLogger, get_logger
 from app.projects.git import GitClient
 from app.projects.loader import ProjectLoader
 from app.projects.manager import RepositoryManager
+from app.runtime.manager import RuntimeManager
+from app.runtime.runner import RuntimeRunner
+from app.runtime.service import RuntimeAnalyzer
 
 
 class Container:
@@ -29,6 +32,8 @@ class Container:
         self._repository_manager: RepositoryManager | None = None
         self._analysis_service: AnalysisService | None = None
         self._analysis_manager: AnalysisManager | None = None
+        self._runtime_analyzer: RuntimeAnalyzer | None = None
+        self._runtime_manager: RuntimeManager | None = None
 
     @property
     def settings(self) -> Settings:
@@ -71,6 +76,25 @@ class Container:
         if self._analysis_manager is None:
             self._analysis_manager = AnalysisManager(service=self.analysis_service)
         return self._analysis_manager
+
+    @property
+    def runtime_analyzer(self) -> RuntimeAnalyzer:
+        """Return the lazily constructed runtime analyzer."""
+        if self._runtime_analyzer is None:
+            runner = RuntimeRunner(
+                timeout_seconds=self._settings.runtime_timeout_seconds,
+                max_output_chars=self._settings.max_output_chars,
+                max_trace_events=self._settings.max_trace_events,
+            )
+            self._runtime_analyzer = RuntimeAnalyzer(runner=runner)
+        return self._runtime_analyzer
+
+    @property
+    def runtime_manager(self) -> RuntimeManager:
+        """Return the lazily constructed runtime manager."""
+        if self._runtime_manager is None:
+            self._runtime_manager = RuntimeManager(service=self.runtime_analyzer)
+        return self._runtime_manager
 
 
 def get_container(request: Request) -> Container:

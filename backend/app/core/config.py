@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     workspace_dir: str = "./.xdebug-workspace"
     github_clone_timeout_seconds: int = 120
 
+    # Runtime execution (Phase 4).
+    runtime_timeout_seconds: int = 60
+    max_output_chars: int = 50_000
+    max_trace_events: int = 10_000
+    c_compiler: str = "gcc"
+    cpp_compiler: str = "g++"
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
