@@ -7,14 +7,15 @@
 
 ## Current Status
 
-* **Milestone:** Phase 1 — Project Foundation
+* **Milestone:** Phase 2 — Repository Understanding
 * **Branch:** `develop`
 * **Completed:**
-  * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint — merged
-  * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check — merged
+  * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
+  * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
   * Docker infrastructure: backend/frontend images + Compose with PostgreSQL and Neo4j
   * CI workflow (GitHub Actions): backend lint/format/typecheck/tests + frontend lint/typecheck/format/test/build
-* **Next milestone:** Phase 2 — Repository upload and project loader
+  * Repository ingestion: local zip upload, GitHub clone, language detection (Python/C/C++), ignore rules with `.gitignore` support, project loader producing a normalized repository representation (`POST /projects/upload`, `POST /projects/github`)
+* **Next milestone:** Phase 3 — Static Analysis Engine
 
 Quick start:
 

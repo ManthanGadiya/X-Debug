@@ -34,3 +34,5 @@ Thumbs.db
 # Docker / Runtime
 docker/data/
 *.log
+
+.xdebug-workspace/
