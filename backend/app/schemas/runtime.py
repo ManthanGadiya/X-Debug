@@ -9,18 +9,6 @@ from pydantic import BaseModel, Field
 from app.runtime.model import RuntimeStatus
 
 
-class RuntimeStartRequest(BaseModel):
-    """Request body for starting a runtime execution run."""
-
-    project_id: str = Field(min_length=1)
-
-
-class TestStartRequest(BaseModel):
-    """Request body for starting a test execution run."""
-
-    project_id: str = Field(min_length=1)
-
-
 class RuntimeExceptionSchema(BaseModel):
     """Serializable exception captured during execution."""
 

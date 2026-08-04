@@ -10,7 +10,6 @@ and executed with the configured toolchain.
 from __future__ import annotations
 
 import logging
-import subprocess
 import sys
 import tempfile
 import time
@@ -27,7 +26,7 @@ from app.runtime.model import (
     TestExecution,
     TestSuite,
 )
-from app.runtime.runner import RuntimeRunner, _truncate
+from app.runtime.runner import RuntimeRunner, _run_bounded, _truncate
 
 logger = get_logger(__name__)
 
@@ -109,7 +108,7 @@ class TestRunner:
                 "--no-header",
             ]
             started = time.monotonic()
-            _run_subprocess(command, root, self._timeout_seconds)
+            _run_bounded(command, workdir=root, timeout_seconds=self._timeout_seconds)
             duration = time.monotonic() - started
             return _parse_junit(junit_path, duration, self._max_output_chars)
 
@@ -159,35 +158,6 @@ class TestRunner:
             skipped=0,
             duration_seconds=suite_duration,
             cases=cases,
-        )
-
-
-def _run_subprocess(
-    command: list[str], workdir: Path, timeout_seconds: int
-) -> subprocess.CompletedProcess[str]:
-    """Run ``command`` with a wall-clock timeout, returning the outcome."""
-    try:
-        return subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            cwd=str(workdir),
-            check=False,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return subprocess.CompletedProcess(
-            args=command,
-            returncode=-1,
-            stdout=exc.stdout if isinstance(exc.stdout, str) else "",
-            stderr=exc.stderr if isinstance(exc.stderr, str) else "",
-        )
-    except OSError as exc:
-        return subprocess.CompletedProcess(
-            args=command,
-            returncode=-1,
-            stdout="",
-            stderr=f"Failed to start process: {exc}",
         )
 
 

@@ -21,8 +21,6 @@ class CParser(TreeSitterParser):
         return TreeSitterLanguage(tsc.language())
 
     def _class_from_node(self, node: Node, source: str) -> ClassDef | None:
-        if node.type == "class_specifier":
-            return None
         name_node = node.child_by_field_name("name")
         if name_node is None:
             return None

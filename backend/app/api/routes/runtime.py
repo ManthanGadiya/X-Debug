@@ -18,13 +18,13 @@ from app.runtime.manager import RuntimeRun, RuntimeStatus
 from app.runtime.model import RuntimeException, RuntimeResult
 from app.runtime.replay import ExecutionReplay, ReplayStep
 from app.runtime.service import RuntimeAnalyzer
+from app.schemas.projects import ProjectStartRequest
 from app.schemas.runtime import (
     ReplayStepListSchema,
     ReplayStepSchema,
     ReplaySummarySchema,
     RuntimeDetail,
     RuntimeExceptionSchema,
-    RuntimeStartRequest,
     RuntimeSummary,
     RuntimeTraceDetail,
     TraceEventSchema,
@@ -51,7 +51,7 @@ def list_runtime_runs(container: ContainerDep) -> list[RuntimeSummary]:
 )
 def start_run(
     container: ContainerDep,
-    request: RuntimeStartRequest,
+    request: ProjectStartRequest,
     background_tasks: BackgroundTasks,
 ) -> RuntimeSummary:
     """Queue a runtime execution run for a previously ingested project."""

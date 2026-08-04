@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 
 from app.analysis.graph import Graph, GraphEdge, GraphNode
+from app.analysis.knowledge import _match_function_candidates
 from app.localization.model import Evidence, EvidenceSource
 
 _FUNCTION_KINDS = ("function", "method")
@@ -153,14 +154,11 @@ class EvidenceExtractor:
     def resolve_function(self, language: str, filename: str, function: str) -> str:
         """Link a runtime function name to a static node id when unambiguous.
 
-        Mirrors ``knowledge._resolve_runtime_function``; the fallback id is
-        never created here because the engine does not mutate the graph.
+        Shares candidate matching with ``knowledge._resolve_runtime_function``;
+        the fallback id is never created here because the engine does not
+        mutate the graph.
         """
-        candidates = [
-            node_id
-            for node_id, file in self._function_index.get(function, [])
-            if file is not None and _same_source(file, filename)
-        ]
+        candidates = _match_function_candidates(self._function_index, filename, function)
         if len(candidates) == 1:
             return candidates[0]
         return f"runtime::{language}::{filename}::{function}"

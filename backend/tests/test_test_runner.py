@@ -7,12 +7,12 @@ from pathlib import Path
 from app.projects.languages import Language
 from app.projects.loader import Project, ProjectLoader
 from app.runtime.model import TestCaseOutcome
+from app.runtime.runner import _run_bounded
 from app.runtime.test_runner import (
     TestRunner,
     _is_c_test,
     _is_python_test,
     _parse_junit,
-    _run_subprocess,
 )
 
 
@@ -199,10 +199,10 @@ def test_run_subprocess_times_out(tmp_path: Path) -> None:
     """A subprocess exceeding the timeout returns a non-zero outcome."""
     import sys
 
-    completed = _run_subprocess(
+    completed = _run_bounded(
         [sys.executable, "-c", "import time; time.sleep(10)"],
-        tmp_path,
-        1,
+        workdir=tmp_path,
+        timeout_seconds=1,
     )
 
     assert completed.returncode == -1
@@ -210,7 +210,9 @@ def test_run_subprocess_times_out(tmp_path: Path) -> None:
 
 def test_run_subprocess_missing_executable_reports_oserror(tmp_path: Path) -> None:
     """A missing executable returns a process start error."""
-    completed = _run_subprocess([str(tmp_path / "missing.exe")], tmp_path, 15)
+    completed = _run_bounded(
+        [str(tmp_path / "missing.exe")], workdir=tmp_path, timeout_seconds=15
+    )
 
     assert completed.returncode == -1
     assert "Failed to start process" in completed.stderr

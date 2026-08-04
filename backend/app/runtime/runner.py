@@ -72,6 +72,60 @@ def _truncate(text: str, limit: int) -> str:
     return text[:limit] + "\n... [truncated]"
 
 
+def _run_bounded(
+    command: list[str],
+    *,
+    workdir: Path,
+    timeout_seconds: int,
+    env: dict[str, str] | None = None,
+    logger: StructuredLogger | None = None,
+) -> subprocess.CompletedProcess[str]:
+    """Run ``command`` with a wall-clock timeout, normalizing failures.
+
+    A timeout becomes ``returncode == -1`` and a failed spawn becomes
+    ``returncode == -1`` with an explanatory stderr, so callers never need
+    exception handling. When ``logger`` is given, both failures are logged.
+    """
+    try:
+        return subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            env=env,
+            cwd=str(workdir),
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        if logger is not None:
+            logger.structured(
+                logging.WARNING,
+                "target execution timed out",
+                command=command[0],
+                timeout_seconds=timeout_seconds,
+            )
+        return subprocess.CompletedProcess(
+            args=command,
+            returncode=-1,
+            stdout=exc.stdout if isinstance(exc.stdout, str) else "",
+            stderr=exc.stderr if isinstance(exc.stderr, str) else "",
+        )
+    except OSError as exc:
+        if logger is not None:
+            logger.structured(
+                logging.ERROR,
+                "failed to start target process",
+                command=command[0],
+                error=str(exc),
+            )
+        return subprocess.CompletedProcess(
+            args=command,
+            returncode=-1,
+            stdout="",
+            stderr=f"Failed to start process: {exc}",
+        )
+
+
 class RuntimeRunner:
     """Execute targets in child processes with enforced resource limits."""
 
@@ -157,42 +211,13 @@ class RuntimeRunner:
         workdir: Path,
     ) -> _Completed:
         started = time.monotonic()
-        try:
-            completed = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                timeout=self._timeout_seconds,
-                env=env,
-                cwd=str(workdir),
-                check=False,
-            )
-        except subprocess.TimeoutExpired as exc:
-            self._logger.structured(
-                logging.WARNING,
-                "target execution timed out",
-                command=command[0],
-                timeout_seconds=self._timeout_seconds,
-            )
-            return _Completed(
-                returncode=-1,
-                stdout=exc.stdout if isinstance(exc.stdout, str) else "",
-                stderr=exc.stderr if isinstance(exc.stderr, str) else "",
-                duration_seconds=time.monotonic() - started,
-            )
-        except OSError as exc:
-            self._logger.structured(
-                logging.ERROR,
-                "failed to start target process",
-                command=command[0],
-                error=str(exc),
-            )
-            return _Completed(
-                returncode=-1,
-                stdout="",
-                stderr=f"Failed to start process: {exc}",
-                duration_seconds=time.monotonic() - started,
-            )
+        completed = _run_bounded(
+            command,
+            workdir=workdir,
+            timeout_seconds=self._timeout_seconds,
+            env=env,
+            logger=self._logger,
+        )
         return _Completed(
             returncode=completed.returncode,
             stdout=completed.stdout or "",

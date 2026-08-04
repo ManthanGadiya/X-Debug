@@ -501,6 +501,19 @@ def _runtime_function_index(
     return index
 
 
+def _match_function_candidates(
+    index: dict[str, list[tuple[str, str | None]]],
+    filename: str,
+    function: str,
+) -> list[str]:
+    """Return static node ids unambiguously matching a runtime function name."""
+    return [
+        node_id
+        for node_id, file in index.get(function, [])
+        if file is not None and _same_source(file, filename)
+    ]
+
+
 def _resolve_runtime_function(
     language: str,
     filename: str,
@@ -509,11 +522,7 @@ def _resolve_runtime_function(
     graph: Graph,
 ) -> str:
     """Link a runtime function to a static node, or record a runtime-only node."""
-    candidates = [
-        node_id
-        for node_id, file in index.get(function, [])
-        if file is not None and _same_source(file, filename)
-    ]
+    candidates = _match_function_candidates(index, filename, function)
     if len(candidates) == 1:
         return candidates[0]
     runtime_id = f"runtime::{language}::{filename}::{function}"

@@ -50,7 +50,7 @@ class CFGBuilder:
             )
         )
         blocks: list[str] = []
-        _emit_body(graph, prefix, node.body, start, blocks, returns=[])
+        _emit_body(graph, prefix, node.body, start, blocks)
         graph.add_node(
             GraphNode(
                 id=f"{prefix}:end",
@@ -91,8 +91,6 @@ def _emit_body(
     body: list[ast.stmt],
     entry: str,
     blocks: list[str],
-    *,
-    returns: list[str],
 ) -> str:
     """Emit ``body`` starting from ``entry``; return the exit block id."""
     current = entry
@@ -107,7 +105,6 @@ def _emit_body(
                 {"stmt": "return", "line": str(statement.lineno)},
             )
             graph.add_edge(current, target, "return")
-            returns.append(target)
             continue
         if isinstance(statement, ast.If):
             current = _emit_if(graph, prefix, statement, current, blocks, counter)
@@ -155,9 +152,9 @@ def _emit_if(
     )
     graph.add_edge(entry, condition, "branch")
 
-    then_exit = _emit_body(graph, prefix, node.body, condition, blocks, returns=[])
+    then_exit = _emit_body(graph, prefix, node.body, condition, blocks)
     else_exit = (
-        _emit_body(graph, prefix, node.orelse, condition, blocks, returns=[])
+        _emit_body(graph, prefix, node.orelse, condition, blocks)
         if node.orelse
         else condition
     )
@@ -190,9 +187,9 @@ def _emit_while(
     )
     graph.add_edge(entry, condition, "loop")
 
-    body_exit = _emit_body(graph, prefix, node.body, condition, blocks, returns=[])
+    body_exit = _emit_body(graph, prefix, node.body, condition, blocks)
     else_exit = (
-        _emit_body(graph, prefix, node.orelse, condition, blocks, returns=[])
+        _emit_body(graph, prefix, node.orelse, condition, blocks)
         if node.orelse
         else condition
     )
@@ -223,9 +220,9 @@ def _emit_for(
     )
     graph.add_edge(entry, header, "loop")
 
-    body_exit = _emit_body(graph, prefix, node.body, header, blocks, returns=[])
+    body_exit = _emit_body(graph, prefix, node.body, header, blocks)
     else_exit = (
-        _emit_body(graph, prefix, node.orelse, header, blocks, returns=[])
+        _emit_body(graph, prefix, node.orelse, header, blocks)
         if node.orelse
         else header
     )
@@ -247,7 +244,7 @@ def _emit_try(
     blocks: list[str],
     counter: list[int],
 ) -> str:
-    body_exit = _emit_body(graph, prefix, node.body, entry, blocks, returns=[])
+    body_exit = _emit_body(graph, prefix, node.body, entry, blocks)
 
     join = _block(graph, prefix, counter, "join", {"stmt": "try-join"})
     graph.add_edge(body_exit, join, "join")
@@ -262,12 +259,12 @@ def _emit_try(
             {"stmt": "except", "line": str(handler.lineno)},
         )
         graph.add_edge(entry, handler_block, "exception")
-        handler_exit = _emit_body(graph, prefix, handler.body, handler_block, blocks, returns=[])
+        handler_exit = _emit_body(graph, prefix, handler.body, handler_block, blocks)
         if handler_exit != handler_block:
             graph.add_edge(handler_exit, join, "join")
 
     if node.orelse:
-        else_exit = _emit_body(graph, prefix, node.orelse, join, blocks, returns=[])
+        else_exit = _emit_body(graph, prefix, node.orelse, join, blocks)
         if else_exit != join:
             graph.add_edge(else_exit, join, "next")
 
