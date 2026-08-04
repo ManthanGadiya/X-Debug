@@ -9,12 +9,12 @@ model, no hidden heuristics, no randomness.
 
 from __future__ import annotations
 
-from typing import Dict, Mapping, Optional, Sequence
+from collections.abc import Mapping, Sequence
 
 from app.localization.model import Evidence, EvidenceSource
 
 # Weights from docs/BUG_LOCALIZATION.md §23 (sums to 1.0).
-_DEFAULT_WEIGHTS: Dict[EvidenceSource, float] = {
+_DEFAULT_WEIGHTS: dict[EvidenceSource, float] = {
     EvidenceSource.RUNTIME_TRACE: 0.30,
     EvidenceSource.STACK_TRACE: 0.20,
     EvidenceSource.DATA_FLOW: 0.20,
@@ -28,8 +28,8 @@ _DEFAULT_WEIGHTS: Dict[EvidenceSource, float] = {
 class ConfidenceScorer:
     """Deterministic confidence scoring using configurable source weights."""
 
-    def __init__(self, weights: Optional[Mapping[EvidenceSource, float]] = None) -> None:
-        self._weights: Dict[EvidenceSource, float] = dict(_DEFAULT_WEIGHTS)
+    def __init__(self, weights: Mapping[EvidenceSource, float] | None = None) -> None:
+        self._weights: dict[EvidenceSource, float] = dict(_DEFAULT_WEIGHTS)
         if weights:
             self._weights.update(weights)
         total = sum(self._weights.values())
@@ -45,7 +45,7 @@ class ConfidenceScorer:
         one wins for that source; a source never contributes more than its
         full weight.
         """
-        best_by_source: Dict[EvidenceSource, float] = {}
+        best_by_source: dict[EvidenceSource, float] = {}
         for ev in evidence:
             previous = best_by_source.get(ev.source)
             if previous is None or ev.score > previous:
@@ -58,7 +58,7 @@ class ConfidenceScorer:
             4,
         )
 
-    def best(self, evidence: Sequence[Evidence]) -> Optional[Evidence]:
+    def best(self, evidence: Sequence[Evidence]) -> Evidence | None:
         """Return the strongest piece of evidence, or ``None`` if empty."""
         if not evidence:
             return None

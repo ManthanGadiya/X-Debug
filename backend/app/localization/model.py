@@ -10,9 +10,9 @@ and the sources that were missing (docs/BUG_LOCALIZATION.md §25).
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import List, Optional, Sequence
 
 
 class EvidenceSource(StrEnum):
@@ -36,6 +36,7 @@ class Evidence:
     score: float
 
     def __post_init__(self) -> None:
+        """Validate that the evidence score lies in the unit interval."""
         if not 0.0 <= self.score <= 1.0:
             raise ValueError(f"Evidence score must be in [0, 1], got {self.score!r}")
 
@@ -52,6 +53,7 @@ class LocalizationCandidate:
     reason: str = ""
 
     def __post_init__(self) -> None:
+        """Validate that the candidate score lies in the unit interval."""
         if not 0.0 <= self.score <= 1.0:
             raise ValueError(f"Candidate score must be in [0, 1], got {self.score!r}")
 
@@ -63,14 +65,15 @@ class LocalizationResult:
     resolved: bool
     confidence: float
     summary: str
-    root_cause: Optional[LocalizationCandidate]
+    root_cause: LocalizationCandidate | None
     candidates: Sequence[LocalizationCandidate]
-    propagation_path: List[str]
+    propagation_path: list[str]
     evidence_summary: Sequence[Evidence]
-    missing_sources: List[str]
-    suggested_fix: Optional[str]
+    missing_sources: list[str]
+    suggested_fix: str | None
 
     def __post_init__(self) -> None:
+        """Validate confidence bounds and resolved-result invariants."""
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError(f"Confidence must be in [0, 1], got {self.confidence!r}")
         if self.resolved and self.root_cause is None:
