@@ -84,6 +84,19 @@ class TestManager:
         """Return the record for ``run_id`` or raise if unknown."""
         return self._get_or_raise(run_id)
 
+    def list(self) -> list[TestRun]:
+        """Return all test records, most recently created first."""
+        with self._lock:
+            records = list(self._records.values())
+        return [
+            record
+            for _, record in sorted(
+                enumerate(records),
+                key=lambda item: (item[1].created_at, item[0]),
+                reverse=True,
+            )
+        ]
+
     def _get_or_raise(self, run_id: str) -> TestRun:
         with self._lock:
             record = self._records.get(run_id)

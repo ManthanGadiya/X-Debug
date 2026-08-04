@@ -7,6 +7,8 @@ deterministic weighted sum of per-source evidence scores; see
 docs/BUG_LOCALIZATION.md §23.
 """
 
+from app.localization.engine import LocalizationEngine
+from app.localization.manager import LocalizationManager
 from app.localization.model import (
     Evidence,
     EvidenceSource,
@@ -14,8 +16,6 @@ from app.localization.model import (
     LocalizationResult,
 )
 from app.localization.scorer import ConfidenceScorer
-from app.localization.engine import LocalizationEngine
-from app.localization.manager import LocalizationManager
 
 __all__ = [
     "Evidence",

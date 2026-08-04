@@ -104,3 +104,25 @@ def test_trace_rejects_unknown_language(client: TestClient) -> None:
     response = client.get(f"/api/v1/runtime/{run_id}/trace/Rust")
 
     assert response.status_code == 422
+
+
+def test_list_runtime_empty(client: TestClient) -> None:
+    """Listing runtime runs before any start returns an empty list."""
+    response = client.get("/api/v1/runtime")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_list_runtime_returns_runs_newest_first(client: TestClient) -> None:
+    """Started runtime runs appear in the listing, most recent first."""
+    project_id = _ingest(client, {"main.py": "print('hi')\n"})
+    first_id = _start_run(client, project_id)["id"]
+    second_id = _start_run(client, project_id)["id"]
+
+    response = client.get("/api/v1/runtime")
+    assert response.status_code == 200
+    body = response.json()
+
+    assert [run["id"] for run in body] == [second_id, first_id]
+    assert all(run["project_id"] == project_id for run in body)

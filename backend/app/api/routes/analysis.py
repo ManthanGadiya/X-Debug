@@ -33,6 +33,16 @@ _GRAPH_KINDS = {
 }
 
 
+@router.get(
+    "",
+    response_model=list[AnalysisSummary],
+    summary="List analysis runs",
+)
+def list_analysis(container: ContainerDep) -> list[AnalysisSummary]:
+    """Return all analysis runs, most recent first."""
+    return [_to_summary(record) for record in container.analysis_manager.list()]
+
+
 @router.post(
     "/start",
     response_model=AnalysisSummary,

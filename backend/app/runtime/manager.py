@@ -84,6 +84,19 @@ class RuntimeManager:
         """Return the record for ``run_id`` or raise if unknown."""
         return self._get_or_raise(run_id)
 
+    def list(self) -> list[RuntimeRun]:
+        """Return all runtime records, most recently created first."""
+        with self._lock:
+            records = list(self._records.values())
+        return [
+            record
+            for _, record in sorted(
+                enumerate(records),
+                key=lambda item: (item[1].created_at, item[0]),
+                reverse=True,
+            )
+        ]
+
     def latest_ready(self, project_id: str) -> RuntimeRun | None:
         """Return the most recently completed result for ``project_id``."""
         with self._lock:

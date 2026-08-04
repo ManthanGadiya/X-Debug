@@ -100,3 +100,26 @@ def test_graph_endpoint_rejects_unknown_kind(client: TestClient) -> None:
     response = client.get(f"/api/v1/analysis/{analysis_id}/graphs/bogus")
 
     assert response.status_code == 422
+
+
+def test_list_analysis_empty(client: TestClient) -> None:
+    """Listing analysis runs before any start returns an empty list."""
+    response = client.get("/api/v1/analysis")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_list_analysis_returns_runs_newest_first(client: TestClient) -> None:
+    """Started analyses appear in the listing, most recent first."""
+    project_id = _ingest(client, {"main.py": "pass\n"})
+    first_id = _start_analysis(client, project_id)["id"]
+    second_id = _start_analysis(client, project_id)["id"]
+
+    response = client.get("/api/v1/analysis")
+    assert response.status_code == 200
+    body = response.json()
+
+    assert [run["id"] for run in body] == [second_id, first_id]
+    assert all(run["project_id"] == project_id for run in body)
+    assert body[0]["status"] in {"queued", "running", "ready", "failed"}

@@ -93,6 +93,19 @@ class AnalysisManager:
         """Return the record for ``analysis_id`` or raise if unknown."""
         return self._get_or_raise(analysis_id)
 
+    def list(self) -> list[AnalysisRecord]:
+        """Return all analysis records, most recently created first."""
+        with self._lock:
+            records = list(self._records.values())
+        return [
+            record
+            for _, record in sorted(
+                enumerate(records),
+                key=lambda item: (item[1].created_at, item[0]),
+                reverse=True,
+            )
+        ]
+
     def latest_ready(self, project_id: str) -> AnalysisRecord | None:
         """Return the most recently completed result for ``project_id``."""
         with self._lock:

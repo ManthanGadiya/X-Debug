@@ -111,3 +111,25 @@ def test_results_rejects_unknown_language(client: TestClient) -> None:
     response = client.get(f"/api/v1/tests/{run_id}/results/Rust")
 
     assert response.status_code == 422
+
+
+def test_list_tests_empty(client: TestClient) -> None:
+    """Listing test runs before any start returns an empty list."""
+    response = client.get("/api/v1/tests")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_list_tests_returns_runs_newest_first(client: TestClient) -> None:
+    """Started test runs appear in the listing, most recent first."""
+    project_id = _ingest(client, {"test_sample.py": "def test_ok():\n    assert True\n"})
+    first_id = _start_tests(client, project_id)["id"]
+    second_id = _start_tests(client, project_id)["id"]
+
+    response = client.get("/api/v1/tests")
+    assert response.status_code == 200
+    body = response.json()
+
+    assert [run["id"] for run in body] == [second_id, first_id]
+    assert all(run["project_id"] == project_id for run in body)

@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 7 — Explanation Engine — implemented on branch
-* **Branch:** `feature/bug-localization` (not yet merged)
+* **Milestone:** Phase 8 — Frontend — complete
+* **Branch:** `feature/frontend-dashboard`
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
@@ -22,7 +22,14 @@
   * Knowledge graph: merges AST structure, dependency, call graph, control flow and data flow with runtime execution evidence into one unified per-project graph, in memory — node kinds (project/module/class/function/method/variable/condition/loop/exception) and edge kinds (calls/imports/defines/inherits/reads/writes/returns/throws/executes_after/flows_to) follow the documented evidence graph taxonomy, with per-source provenance (`POST /knowledge/build`, `GET /knowledge/{project_id}`)
   * Bug localization engine: resolves the crash site from the knowledge graph plus a runtime result, fuses per-candidate evidence (stack trace, runtime trace, data flow, CFG reachability, call graph, dependency graph, AST) into a weighted confidence, and returns either a root cause with propagation path or ranked below-threshold hypotheses — deterministic and explainable per `docs/BUG_LOCALIZATION.md` (`POST /api/v1/localization/{project_id}`, `GET /api/v1/localization/{project_id}`)
   * Explanation engine: converts a stored localization result into a structured, evidence-backed report — summary, what happened, why it happened (root-cause causal chain or an honest below-threshold hypothesis), where it happened (propagation path mapped to source references), evidence list with per-item provenance and confidence, and the suggested fix — with a confidence score and `insufficient_evidence` flag, all generated deterministically from program analysis with no language models (`POST /api/v1/explanation/{project_id}`, `GET /api/v1/explanation/{project_id}`)
-* **Next milestone:** Phase 8 — Frontend
+  * Frontend dashboard: upload panel (zip archive or GitHub URL), live backend health status, project/analysis/runtime/tests history tables with polling, and recent-run summaries on the dashboard home (`/`)
+  * Frontend project views: project list and detail pages with per-project analysis/runtime/tests history and run action links (`/projects`, `/projects/{id}`)
+  * Frontend analysis views: analysis run list and detail with stat cards, graph viewer (dependency/call/cfg/dataflow), and status polling (`/analysis`, `/analysis/{id}`)
+  * Frontend runtime views: run list and detail with trace stdout/stderr viewers, per-language step-through execution replay with variable snapshots (`/runtime`, `/runtime/{id}`)
+  * Frontend test views: test run list and detail with per-suite case tables and failure viewers (`/tests`, `/tests/{id}`)
+  * Frontend report views: per-project localization and explanation reports with confidence scores, evidence viewer, and propagation timeline (`/reports`)
+  * Frontend visualization components: graph viewer, code viewer, evidence viewer, status badges, stat cards, and report viewers in the diagnostic-instrument style
+* **Next milestone:** Phase 9 — Testing & Optimization
 
 Quick start:
 
@@ -30,11 +37,13 @@ Quick start:
 
 ### Backend
 
+The virtual environment lives at the project root (`.venv/`), shared by the whole repo:
+
 ```sh
-cd backend
 python -m venv .venv
 .venv\Scripts\activate        # Windows · macOS/Linux: source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e "backend[dev]"
+cd backend
 uvicorn app.main:app --reload
 ```
 

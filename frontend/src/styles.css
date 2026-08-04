@@ -1,0 +1,100 @@
+/* XDebug global styles: oscilloscope-grid atmosphere + motion system. */
+
+:root {
+  --xbg: #0a0f15;
+  --xgrid: rgba(44, 198, 232, 0.06);
+  --xgrid-strong: rgba(44, 198, 232, 0.1);
+  --xmono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--xbg);
+}
+
+/* Oscilloscope grid rendered behind the app shell. */
+#root {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(44, 198, 232, 0.09), transparent 70%),
+    linear-gradient(var(--xgrid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--xgrid) 1px, transparent 1px),
+    linear-gradient(var(--xgrid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--xgrid-strong) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    80px 80px,
+    80px 80px,
+    16px 16px,
+    16px 16px;
+  background-attachment: fixed;
+}
+
+/* Refined scrollbars for the instrument feel. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2c3844 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2c3844;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --- Motion system ------------------------------------------------------ */
+
+@keyframes xd-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes xd-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes xd-sweep {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.xd-reveal {
+  animation: xd-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.xd-pulse {
+  animation: xd-pulse 1.6s ease-in-out infinite;
+}
+
+/* Monospace readout helper used for quantitative values. */
+.xd-mono {
+  font-family: var(--xmono);
+  letter-spacing: -0.01em;
+}
+
+.xd-muted {
+  color: #8f9ea9;
+}
