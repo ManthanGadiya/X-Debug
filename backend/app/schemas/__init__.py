@@ -15,6 +15,12 @@ from app.schemas.knowledge import (
     KnowledgeStats,
     KnowledgeSummary,
 )
+from app.schemas.localization import (
+    EvidenceSchema,
+    LocalizationCandidateSchema,
+    LocalizationDetail,
+    LocalizationRequest,
+)
 from app.schemas.projects import (
     GitHubCloneRequest,
     ProjectDetail,
@@ -26,6 +32,7 @@ __all__ = [
     "AnalysisDetail",
     "AnalysisStartRequest",
     "AnalysisSummary",
+    "EvidenceSchema",
     "GitHubCloneRequest",
     "GraphData",
     "GraphEdgeSchema",
@@ -35,6 +42,9 @@ __all__ = [
     "KnowledgeDetail",
     "KnowledgeStats",
     "KnowledgeSummary",
+    "LocalizationCandidateSchema",
+    "LocalizationDetail",
+    "LocalizationRequest",
     "ProjectDetail",
     "ProjectSummary",
     "SourceFile",
