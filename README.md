@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 9 — Testing & Optimization — frontend test gate green
-* **Branch:** `feature/frontend-tests`
+* **Milestone:** Phase 9 — Testing & Optimization — backend runtime coverage at 100%
+* **Branch:** `main`
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
@@ -30,7 +30,8 @@
   * Frontend report views: per-project localization and explanation reports with confidence scores, evidence viewer, and propagation timeline (`/reports`)
   * Frontend visualization components: graph viewer, code viewer, evidence viewer, status badges, stat cards, and report viewers in the diagnostic-instrument style
   * Frontend page test suites: Vitest + Testing Library coverage for all nine dashboard pages (45 tests) — dashboard, projects, analysis, runtime, tests, reports, and their detail views, including graph rendering, code viewer, language selectors, replay stepping, and polling behavior — with a green gate across test, typecheck, lint, and build
-* **Next milestone:** Phase 9 continued — optimization pass and backend test coverage
+  * Backend test coverage pass: runtime harness and service modules raised to 100% coverage (harness tracing, path containment, CLI entry points, runner error handling), full backend suite at 310 tests with 96.31% total coverage and a green gate across pytest/ruff/black/mypy, merged through CI and released to `main`
+* **Next milestone:** Phase 9 continued — performance optimization pass (graph optimization, parallel parsing, memory optimization, caching)
 
 Quick start:
 
