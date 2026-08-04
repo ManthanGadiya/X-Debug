@@ -8,12 +8,17 @@ FastAPI backend for the XDebug explainable AI debugging assistant.
 
 ## Setup
 
+The virtual environment lives at the **project root** (`.venv/`), shared by the
+whole repo. From the repository root:
+
 ```bash
 py -3.12 -m venv .venv
 .venv\Scripts\activate            # Windows
 source .venv/bin/activate         # Linux/macOS
-pip install -e ".[dev]"
+pip install -e "backend[dev]"
 ```
+
+Then run the backend from the `backend/` directory:
 
 Copy `.env.example` to `.env` to override any setting:
 

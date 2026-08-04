@@ -30,11 +30,13 @@ Quick start:
 
 ### Backend
 
+The virtual environment lives at the project root (`.venv/`), shared by the whole repo:
+
 ```sh
-cd backend
 python -m venv .venv
 .venv\Scripts\activate        # Windows · macOS/Linux: source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e "backend[dev]"
+cd backend
 uvicorn app.main:app --reload
 ```
 
