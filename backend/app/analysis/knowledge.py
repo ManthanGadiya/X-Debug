@@ -512,8 +512,7 @@ def _resolve_runtime_function(
     candidates = [
         node_id
         for node_id, file in index.get(function, [])
-        if file is not None
-        and (file == filename or file.endswith(f"/{filename}") or filename.endswith(f"/{file}"))
+        if file is not None and _same_source(file, filename)
     ]
     if len(candidates) == 1:
         return candidates[0]
@@ -527,6 +526,17 @@ def _resolve_runtime_function(
         )
     )
     return runtime_id
+
+
+def _same_source(file: str, filename: str) -> bool:
+    """Compare a stored source path with a runtime filename across separators."""
+    if file == filename:
+        return True
+    normalized_file = file.replace("\\", "/")
+    normalized_filename = filename.replace("\\", "/")
+    return normalized_file.endswith(
+        f"/{normalized_filename}"
+    ) or normalized_filename.endswith(f"/{normalized_file}")
 
 
 def _add_executes_after(graph: Graph, sequence: Iterable[str]) -> None:

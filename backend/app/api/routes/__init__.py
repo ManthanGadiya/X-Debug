@@ -1,5 +1,23 @@
 """API route handlers, one module per resource."""
 
-from app.api.routes import analysis, health, knowledge, projects, runtime, tests
+from app.api.routes import (
+    analysis,
+    explanation,
+    health,
+    knowledge,
+    localization,
+    projects,
+    runtime,
+    tests,
+)
 
-__all__ = ["analysis", "health", "knowledge", "projects", "runtime", "tests"]
+__all__ = [
+    "analysis",
+    "explanation",
+    "health",
+    "knowledge",
+    "localization",
+    "projects",
+    "runtime",
+    "tests",
+]

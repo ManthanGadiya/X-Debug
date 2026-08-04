@@ -36,3 +36,4 @@ docker/data/
 *.log
 
 .xdebug-workspace/
+.opencode/
