@@ -103,6 +103,38 @@ def test_list_projects_returns_ingested_newest_first(client: TestClient) -> None
     assert body[0]["languages"] == ["Python"]
 
 
+def test_get_project_returns_normalized_structure(client: TestClient) -> None:
+    """A project detail response matches the upload structure."""
+    project_id = _ingest_id(
+        client,
+        "demo.zip",
+        {"main.py": "print('hi')\n", "lib/util.c": "int x;\n"},
+    )
+
+    response = client.get(f"/api/v1/projects/{project_id}")
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["id"] == project_id
+    assert body["name"] == "demo"
+    assert body["source"] == "upload"
+    assert body["file_count"] == 2
+    assert body["source_file_count"] == 2
+    assert body["languages"] == ["Python", "C"]
+    assert {file["path"] for file in body["files"]} == {"main.py", "lib/util.c"}
+    assert all(file["lines"] == 1 for file in body["files"])
+
+
+def test_get_project_unknown_returns_404(client: TestClient) -> None:
+    """Unknown project IDs produce the structured error envelope."""
+    response = client.get("/api/v1/projects/nope")
+
+    assert response.status_code == 404
+    body = response.json()
+    assert body["status"] == "error"
+    assert body["reason"] == "Project not found"
+
+
 def _ingest_id(client: TestClient, filename: str, files: dict[str, str]) -> str:
     response = client.post(
         "/api/v1/projects/upload",

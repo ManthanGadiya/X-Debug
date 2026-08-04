@@ -6,7 +6,7 @@ POST /projects/github  — clone a GitHub repository and ingest it
 
 from __future__ import annotations
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Path, UploadFile
 
 from app.container import ContainerDep
 from app.projects.loader import Project
@@ -37,6 +37,20 @@ def list_projects(container: ContainerDep) -> list[ProjectSummary]:
         )
         for project in container.repository_manager.list_projects()
     ]
+
+
+@router.get(
+    "/{project_id}",
+    response_model=ProjectDetail,
+    summary="Get a project by ID",
+)
+def get_project(
+    container: ContainerDep,
+    project_id: str = Path(..., description="Project identifier"),
+) -> ProjectDetail:
+    """Return the normalized structure of a single ingested project."""
+    project = container.repository_manager.get_project(project_id)
+    return _to_detail(project)
 
 
 @router.post(
