@@ -51,6 +51,7 @@ def run_explanation(project_id: str, container: ContainerDep) -> ExplanationDeta
     )
     return _to_detail(record)
 
+
 @router.get(
     "/{project_id}",
     response_model=ExplanationDetail,

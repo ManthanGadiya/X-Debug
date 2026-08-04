@@ -33,7 +33,10 @@ export function AppLayout() {
             </Text>
           </Group>
           <Group gap={6}>
-            <span className="xd-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: '#1cc57f' }} />
+            <span
+              className="xd-pulse"
+              style={{ width: 8, height: 8, borderRadius: '50%', background: '#1cc57f' }}
+            />
             <Text size="xs" c="dimmed" style={{ fontFamily: 'var(--xmono)' }}>
               READY
             </Text>
@@ -44,7 +47,12 @@ export function AppLayout() {
       <AppShell.Navbar p="sm" withBorder>
         <Stack gap={2}>
           {NAV_ITEMS.map((item) => (
-            <RouterNavLink key={item.to} to={item.to} end={item.end} style={{ textDecoration: 'none' }}>
+            <RouterNavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              style={{ textDecoration: 'none' }}
+            >
               {({ isActive }) => (
                 <NavLink
                   component="span"
@@ -97,8 +105,24 @@ function LogoMark() {
       aria-hidden="true"
       style={{ flexShrink: 0 }}
     >
-      <rect x="1" y="1" width="30" height="30" rx="8" stroke="#00b5dd" strokeWidth="1.5" fill="rgba(0,181,221,0.08)" />
-      <path d="M8 20 L12 20 L14 12 L17 24 L20 14 L22 20 L24 20" stroke="#00b5dd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <rect
+        x="1"
+        y="1"
+        width="30"
+        height="30"
+        rx="8"
+        stroke="#00b5dd"
+        strokeWidth="1.5"
+        fill="rgba(0,181,221,0.08)"
+      />
+      <path
+        d="M8 20 L12 20 L14 12 L17 24 L20 14 L22 20 L24 20"
+        stroke="#00b5dd"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
       <circle cx="24" cy="24" r="2.5" fill="#1cc57f" />
     </svg>
   )

@@ -58,10 +58,7 @@ describe('ProjectsPage', () => {
   })
 
   it('lists indexed projects with language tags', async () => {
-    mockProjects([
-      project,
-      { ...project, id: 'proj-2', name: 'other', languages: ['C', 'C++'] },
-    ])
+    mockProjects([project, { ...project, id: 'proj-2', name: 'other', languages: ['C', 'C++'] }])
 
     renderPage()
 

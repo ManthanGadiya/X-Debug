@@ -53,7 +53,8 @@ function renderPage() {
 describe('DashboardPage', () => {
   it('renders the dashboard title and project count', async () => {
     mockRoutes({
-      '/health': async () => jsonResponse({ status: 'ok', app: 'XDebug API', version: '0.1.0', environment: 'test' }),
+      '/health': async () =>
+        jsonResponse({ status: 'ok', app: 'XDebug API', version: '0.1.0', environment: 'test' }),
       '/projects': async () => jsonResponse([project]),
       '/analysis': async () => jsonResponse([]),
       '/runtime': async () => jsonResponse([]),
@@ -82,7 +83,8 @@ describe('DashboardPage', () => {
 
   it('shows the upload panel', async () => {
     mockRoutes({
-      '/health': async () => jsonResponse({ status: 'ok', app: 'XDebug API', version: '0.1.0', environment: 'test' }),
+      '/health': async () =>
+        jsonResponse({ status: 'ok', app: 'XDebug API', version: '0.1.0', environment: 'test' }),
       '/projects': async () => jsonResponse([]),
       '/analysis': async () => jsonResponse([]),
       '/runtime': async () => jsonResponse([]),
@@ -96,7 +98,8 @@ describe('DashboardPage', () => {
 
   it('does not call projects endpoint twice when listProjects is invoked once', async () => {
     mockRoutes({
-      '/health': async () => jsonResponse({ status: 'ok', app: 'XDebug API', version: '0.1.0', environment: 'test' }),
+      '/health': async () =>
+        jsonResponse({ status: 'ok', app: 'XDebug API', version: '0.1.0', environment: 'test' }),
       '/projects': async () => jsonResponse([]),
       '/analysis': async () => jsonResponse([]),
       '/runtime': async () => jsonResponse([]),

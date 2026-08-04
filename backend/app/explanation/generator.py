@@ -64,9 +64,7 @@ class ExplanationGenerator:
             confidence=localization.confidence,
             propagation_path=list(localization.propagation_path),
             missing_sources=list(localization.missing_sources),
-            insufficient_evidence=(
-                not localization.resolved or bool(localization.missing_sources)
-            ),
+            insufficient_evidence=(not localization.resolved or bool(localization.missing_sources)),
         )
 
     # -- section builders ----------------------------------------------
@@ -112,13 +110,9 @@ class ExplanationGenerator:
                 "single root cause cannot be asserted. The candidates below are "
                 "ranked by the available evidence."
             )
-        return (
-            "Insufficient evidence to determine the root cause with high confidence."
-        )
+        return "Insufficient evidence to determine the root cause with high confidence."
 
-    def _where(
-        self, localization: LocalizationResult, graph: Graph | None
-    ) -> list[WhereReference]:
+    def _where(self, localization: LocalizationResult, graph: Graph | None) -> list[WhereReference]:
         """Where it happened: concrete locations from the graph."""
         refs: list[WhereReference] = []
         seen: set[tuple[str, str, int | None]] = set()
@@ -184,9 +178,7 @@ class ExplanationGenerator:
                 fallback = node
         return fallback
 
-    def _reference(
-        self, node: GraphNode | None, node_id: str, label: str
-    ) -> WhereReference | None:
+    def _reference(self, node: GraphNode | None, node_id: str, label: str) -> WhereReference | None:
         """Build a location reference from a node or, failing that, its id."""
         file: str | None = None
         line: int | None = None

@@ -15,7 +15,11 @@ function isReference(item: EvidenceItem): item is EvidenceReference {
 }
 
 /** Renders a scored list of evidence with its source and description. */
-export function EvidenceViewer({ items, title = 'Evidence', emptyLabel = 'No evidence' }: EvidenceViewerProps) {
+export function EvidenceViewer({
+  items,
+  title = 'Evidence',
+  emptyLabel = 'No evidence',
+}: EvidenceViewerProps) {
   return (
     <Box>
       <Text size="sm" fw={600} mb={4}>

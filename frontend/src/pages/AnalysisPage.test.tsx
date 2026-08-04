@@ -78,8 +78,6 @@ describe('AnalysisPage', () => {
 
     renderPage('/analysis?project=proj-1')
 
-    expect(
-      await screen.findByRole('button', { name: 'Start analysis' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Start analysis' })).toBeInTheDocument()
   })
 })

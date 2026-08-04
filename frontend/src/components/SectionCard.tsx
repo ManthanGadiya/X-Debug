@@ -12,11 +12,7 @@ interface SectionCardProps {
 /** A titled panel used to group related content on a page. */
 export function SectionCard({ title, subtitle, actions, children, delay = 0 }: SectionCardProps) {
   return (
-    <Card
-      p="lg"
-      className="xd-reveal"
-      style={delay ? { animationDelay: `${delay}ms` } : undefined}
-    >
+    <Card p="lg" className="xd-reveal" style={delay ? { animationDelay: `${delay}ms` } : undefined}>
       <Group justify="space-between" align="flex-start" mb="sm" wrap="wrap" gap="sm">
         <div>
           <Text size="sm" fw={600}>
