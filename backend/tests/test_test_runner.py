@@ -12,6 +12,7 @@ from app.runtime.test_runner import (
     _is_c_test,
     _is_python_test,
     _parse_junit,
+    _run_subprocess,
 )
 
 
@@ -28,7 +29,10 @@ def test_is_c_test_detects_paths() -> None:
     """C test detection matches path conventions."""
     assert _is_c_test("tests/main.c")
     assert _is_c_test("test_main.c")
-    assert not _is_c_test("main.c")
+    assert _is_c_test("src/tests/main.c")
+    assert _is_c_test("tests_main.c")
+    assert _is_c_test("tests/helpers.c")
+    assert not _is_c_test("src/main.c")
 
 
 def _make_project(tmp_path: Path, files: dict[str, str]) -> Project:
@@ -159,3 +163,77 @@ def test_parse_junit_parses_cases(tmp_path: Path) -> None:
     assert outcomes["test_a"] == TestCaseOutcome.PASSED
     assert outcomes["test_b"] == TestCaseOutcome.FAILED
     assert outcomes["test_c"] == TestCaseOutcome.SKIPPED
+
+
+def test_parse_junit_invalid_xml_reports_error(tmp_path: Path) -> None:
+    """Malformed JUnit XML yields an error suite."""
+    junit = tmp_path / "junit.xml"
+    junit.write_text("<<< not xml", encoding="utf-8")
+    suite = _parse_junit(junit, 1.0, 100)
+
+    assert suite.tests_run == 0
+    assert suite.error is not None
+    assert "Invalid JUnit report" in suite.error
+
+
+def test_parse_junit_error_element_reports_error_outcome(tmp_path: Path) -> None:
+    """A JUnit error element maps to the ERROR outcome."""
+    junit = tmp_path / "junit.xml"
+    junit.write_text(
+        '<?xml version="1.0"?>\n<testsuite>\n'
+        '  <testcase name="test_err" time="0.1">\n'
+        '    <error message="oops">boom</error>\n'
+        "  </testcase>\n"
+        "</testsuite>\n",
+        encoding="utf-8",
+    )
+    suite = _parse_junit(junit, 1.0, 100)
+
+    assert suite.tests_run == 1
+    assert suite.failed == 1
+    assert suite.cases[0].outcome == TestCaseOutcome.ERROR
+    assert suite.cases[0].message is not None
+
+
+def test_run_subprocess_times_out(tmp_path: Path) -> None:
+    """A subprocess exceeding the timeout returns a non-zero outcome."""
+    import sys
+
+    completed = _run_subprocess(
+        [sys.executable, "-c", "import time; time.sleep(10)"],
+        tmp_path,
+        1,
+    )
+
+    assert completed.returncode == -1
+
+
+def test_run_subprocess_missing_executable_reports_oserror(tmp_path: Path) -> None:
+    """A missing executable returns a process start error."""
+    completed = _run_subprocess([str(tmp_path / "missing.exe")], tmp_path, 15)
+
+    assert completed.returncode == -1
+    assert "Failed to start process" in completed.stderr
+
+
+def test_c_failing_test_reported_per_case(tmp_path: Path) -> None:
+    """A failing C test is reported as a failed case."""
+    project = _make_project(
+        tmp_path,
+        {
+            "test_main.c": "#include <assert.h>\nint main(void) {\n    assert(1 == 2);\n"
+            "    return 0;\n}\n"
+        },
+    )
+    runner = TestRunner(timeout_seconds=60)
+    result = runner.run(project)
+
+    if not result.suites:
+        return
+    suite = result.suites[Language.C.value]
+    if suite.error and "Compiler not found" in suite.error:
+        return
+    assert suite.tests_run == 1
+    assert suite.failed == 1
+    assert suite.passed == 0
+    assert suite.cases[0].outcome == TestCaseOutcome.FAILED

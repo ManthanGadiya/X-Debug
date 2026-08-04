@@ -146,6 +146,7 @@ def _trim_harness_frames(tb: Any) -> Any:
 def _run_target(target: Path, argv: list[str]) -> int:
     """Execute the target script in this process under tracing."""
     collector = TraceCollector(str(target.parent.resolve()))
+    prev_trace = sys.gettrace()
     sys.settrace(collector.trace_function)
     old_argv = sys.argv
     old_path = list(sys.path)
@@ -164,7 +165,7 @@ def _run_target(target: Path, argv: list[str]) -> int:
     finally:
         sys.argv = old_argv
         sys.path[:] = old_path
-        sys.settrace(None)
+        sys.settrace(prev_trace)
         trace_path = os.environ.get("XDEBUG_TRACE_OUTPUT")
         if trace_path:
             Path(trace_path).write_text(collector.to_json(), encoding="utf-8")
