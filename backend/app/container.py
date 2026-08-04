@@ -18,6 +18,10 @@ from app.analysis.manager import AnalysisManager
 from app.analysis.service import AnalysisService
 from app.core.config import Settings, get_settings
 from app.core.logging import StructuredLogger, get_logger
+from app.explanation.generator import ExplanationGenerator
+from app.explanation.manager import ExplanationManager
+from app.localization.engine import LocalizationEngine
+from app.localization.manager import LocalizationManager
 from app.projects.git import GitClient
 from app.projects.loader import ProjectLoader
 from app.projects.manager import RepositoryManager
@@ -37,6 +41,8 @@ class Container:
         self._analysis_service: AnalysisService | None = None
         self._analysis_manager: AnalysisManager | None = None
         self._knowledge_manager: KnowledgeGraphManager | None = None
+        self._localization_manager: LocalizationManager | None = None
+        self._explanation_manager: ExplanationManager | None = None
         self._runtime_analyzer: RuntimeAnalyzer | None = None
         self._runtime_manager: RuntimeManager | None = None
         self._test_runner: TestRunner | None = None
@@ -90,6 +96,22 @@ class Container:
         if self._knowledge_manager is None:
             self._knowledge_manager = KnowledgeGraphManager(builder=KnowledgeGraphBuilder())
         return self._knowledge_manager
+
+    @property
+    def localization_manager(self) -> LocalizationManager:
+        """Return the lazily constructed localization manager."""
+        if self._localization_manager is None:
+            self._localization_manager = LocalizationManager(engine=LocalizationEngine())
+        return self._localization_manager
+
+    @property
+    def explanation_manager(self) -> ExplanationManager:
+        """Return the lazily constructed explanation manager."""
+        if self._explanation_manager is None:
+            self._explanation_manager = ExplanationManager(
+                generator=ExplanationGenerator()
+            )
+        return self._explanation_manager
 
     @property
     def runtime_analyzer(self) -> RuntimeAnalyzer:

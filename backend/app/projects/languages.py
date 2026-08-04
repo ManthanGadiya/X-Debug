@@ -41,4 +41,19 @@ def detect_language(filename: str) -> Language | None:
     return None
 
 
+def resolve_language(name: str) -> Language | None:
+    """Return the canonical language matching ``name`` (case-insensitive).
+
+    Language values are canonical display strings ("Python", "C", "C++"), so
+    client-supplied names such as "python" or "PYTHON" are normalized to the
+    value used as the runtime result key and the knowledge graph node id
+    namespace.
+    """
+    lowered = name.strip().lower()
+    for language in Language:
+        if language.value.lower() == lowered:
+            return language
+    return None
+
+
 _SUFFIXES_SORTED = sorted(_EXTENSION_LANGUAGES, key=len, reverse=True)

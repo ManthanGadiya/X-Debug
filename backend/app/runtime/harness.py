@@ -64,22 +64,33 @@ def _short_path(path: str) -> str:
     return path[-_MAX_FILENAME_CHARS:]
 
 
+def _is_within(path: str, root: str) -> bool:
+    """Return True when ``path`` is ``root`` or lives inside it."""
+    normalized = os.path.normcase(os.path.abspath(path))
+    normalized_root = os.path.normcase(os.path.abspath(root))
+    return normalized == normalized_root or normalized.startswith(normalized_root + os.sep)
+
+
 class TraceCollector:
     """Collector installed as a trace function via :func:`sys.settrace`."""
 
-    def __init__(self) -> None:
+    def __init__(self, root: str | None = None) -> None:
         self.events: list[TraceEvent] = []
         self.start_time = time.monotonic()
+        self._root = root
         self._last_exception: tuple[type[BaseException], BaseException, Any] | None = None
 
     def _record(self, event: TraceEventType, frame: Any, arg: Any = None) -> TraceEvent | None:
-        if not frame.f_code.co_filename or frame.f_code.co_filename.startswith("<"):
+        filename = frame.f_code.co_filename
+        if not filename or filename.startswith("<"):
+            return None
+        if self._root is not None and not _is_within(filename, self._root):
             return None
         now = time.monotonic() - self.start_time
         trace_event = TraceEvent(
             type=event,
             function=frame.f_code.co_name,
-            filename=_short_path(frame.f_code.co_filename),
+            filename=_short_path(filename),
             lineno=frame.f_lineno,
             timestamp=now,
             depth=len(self.events),
@@ -125,23 +136,34 @@ class TraceCollector:
         return json.dumps(payload, default=str)
 
 
+def _trim_harness_frames(tb: Any) -> Any:
+    """Drop frames owned by the harness itself from a traceback."""
+    while tb is not None and tb.tb_frame.f_code.co_filename == __file__:
+        tb = tb.tb_next
+    return tb
+
+
 def _run_target(target: Path, argv: list[str]) -> int:
     """Execute the target script in this process under tracing."""
-    collector = TraceCollector()
+    collector = TraceCollector(str(target.parent.resolve()))
     sys.settrace(collector.trace_function)
     old_argv = sys.argv
+    old_path = list(sys.path)
     sys.argv = [str(target), *argv]
+    sys.path.insert(0, str(target.parent.resolve()))
     try:
         source = target.read_text(encoding="utf-8")
         code = compile(source, str(target), "exec")
         exec(code, {"__name__": "__main__", "__file__": str(target)})
         return 0
     except BaseException as exc:
-        traceback.print_exc()
-        collector._last_exception = (type(exc), exc, exc.__traceback__)
+        tb = _trim_harness_frames(exc.__traceback__)
+        traceback.print_exception(type(exc), exc, tb)
+        collector._last_exception = (type(exc), exc, tb)
         return 1
     finally:
         sys.argv = old_argv
+        sys.path[:] = old_path
         sys.settrace(None)
         trace_path = os.environ.get("XDEBUG_TRACE_OUTPUT")
         if trace_path:

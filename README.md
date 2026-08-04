@@ -7,33 +7,56 @@
 
 ## Current Status
 
-* **Milestone:** Phase 5 — Knowledge Graph — in progress
-* **Branch:** `develop` (feature: `feature/knowledge-graph`)
+* **Milestone:** Phase 7 — Explanation Engine — implemented on branch
+* **Branch:** `feature/bug-localization` (not yet merged)
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
   * Docker infrastructure: backend/frontend images + Compose with PostgreSQL and Neo4j
-  * CI workflow (GitHub Actions): backend lint/format/typecheck/tests + frontend lint/typecheck/format/test/build
+  * CI workflow (GitHub Actions): backend lint/format/typecheck/tests + frontend lint/format/typecheck/test/build
   * Repository ingestion: local zip upload, GitHub clone, language detection (Python/C/C++), ignore rules with `.gitignore` support, project loader producing a normalized repository representation (`POST /projects/upload`, `POST /projects/github`)
   * Static analysis engine: AST parsing for Python (stdlib `ast`) and C/C++ (tree-sitter), dependency graph, call graph, control flow graph, and data flow analysis, orchestrated by the analysis pipeline (`POST /analysis/start`, `GET /analysis/{id}`, `GET /analysis/{id}/graphs/{kind}`)
   * Runtime analysis engine: bounded subprocess execution with timeouts and output caps, Python tracing via `sys.settrace` (function execution order, call/return events, variable snapshots, exception and stack trace capture, execution timeline), C/C++ compile-and-run via the configured toolchain, entry-point detection per language (`POST /runtime/run`, `GET /runtime/{id}`, `GET /runtime/{id}/trace/{language}`)
   * Test execution: runs a project's available tests in bounded child processes — Python through pytest with a JUnit XML report (per-case outcomes and durations), C/C++ test mains compiled and executed with the configured toolchain, with per-language suites and results (`POST /tests/run`, `GET /tests/{id}`, `GET /tests/{id}/results/{language}`)
   * Execution replay: deterministic playback of a recorded run — a navigable timeline with per-step position, reconstructed call-stack depth, variable snapshots, and forward/backward stepping plus filtered, paginated browsing (`GET /runtime/{id}/replay/{language}`, `GET /runtime/{id}/replay/{language}/step`, `GET /runtime/{id}/replay/{language}/steps`)
-  * Knowledge graph (in progress): merges AST structure, dependency, call graph, control flow and data flow with runtime execution evidence into one unified per-project graph, in memory — node kinds (project/module/class/function/method/variable/condition/loop/exception) and edge kinds (calls/imports/defines/inherits/reads/writes/returns/throws/executes_after/flows_to) follow the documented evidence graph taxonomy, with per-source provenance (`POST /knowledge/build`, `GET /knowledge/{project_id}`)
-* **Next milestone:** Phase 6 — Bug Localization Engine
+  * Knowledge graph: merges AST structure, dependency, call graph, control flow and data flow with runtime execution evidence into one unified per-project graph, in memory — node kinds (project/module/class/function/method/variable/condition/loop/exception) and edge kinds (calls/imports/defines/inherits/reads/writes/returns/throws/executes_after/flows_to) follow the documented evidence graph taxonomy, with per-source provenance (`POST /knowledge/build`, `GET /knowledge/{project_id}`)
+  * Bug localization engine: resolves the crash site from the knowledge graph plus a runtime result, fuses per-candidate evidence (stack trace, runtime trace, data flow, CFG reachability, call graph, dependency graph, AST) into a weighted confidence, and returns either a root cause with propagation path or ranked below-threshold hypotheses — deterministic and explainable per `docs/BUG_LOCALIZATION.md` (`POST /api/v1/localization/{project_id}`, `GET /api/v1/localization/{project_id}`)
+  * Explanation engine: converts a stored localization result into a structured, evidence-backed report — summary, what happened, why it happened (root-cause causal chain or an honest below-threshold hypothesis), where it happened (propagation path mapped to source references), evidence list with per-item provenance and confidence, and the suggested fix — with a confidence score and `insufficient_evidence` flag, all generated deterministically from program analysis with no language models (`POST /api/v1/explanation/{project_id}`, `GET /api/v1/explanation/{project_id}`)
+* **Next milestone:** Phase 8 — Frontend
 
 Quick start:
 
+**Requirements:** Python 3.12+, Node.js 24+, and Docker (optional, for the full stack).
+
+### Backend
+
 ```sh
-# Backend (http://localhost:8000/docs)
-cd backend && pip install -e ".[dev]" && uvicorn app.main:app --reload
+cd backend
+python -m venv .venv
+.venv\Scripts\activate        # Windows · macOS/Linux: source .venv/bin/activate
+pip install -e ".[dev]"
+uvicorn app.main:app --reload
+```
 
-# Frontend (http://localhost:5173)
-cd frontend && npm install && npm run dev
+The API runs at **http://localhost:8000** with interactive docs at **http://localhost:8000/docs**. No configuration is required — the backend boots with safe defaults and writes analysis artifacts under `backend/.xdebug-workspace`.
 
-# Or everything with Docker
+### Frontend
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+The dashboard runs at **http://localhost:5173** and connects to the backend automatically.
+
+### Full stack with Docker
+
+```sh
 docker compose up --build
 ```
+
+Starts the backend, frontend, PostgreSQL, and Neo4j together.
 
 ---
 

@@ -1,8 +1,8 @@
-"""Unit tests for language detection."""
+"""Unit tests for language detection and resolution."""
 
 from __future__ import annotations
 
-from app.projects.languages import Language, detect_language
+from app.projects.languages import Language, detect_language, resolve_language
 
 
 def test_python_extensions() -> None:
@@ -43,3 +43,28 @@ def test_detection_requires_suffix_match() -> None:
     """The extension must be the file suffix, not merely present."""
     assert detect_language("notpython") is None
     assert detect_language("script.py.bak") is None
+
+
+def test_resolve_language_matches_canonical_value() -> None:
+    """The canonical display value resolves to its enum member."""
+    assert resolve_language("Python") == Language.PYTHON
+    assert resolve_language("C") == Language.C
+    assert resolve_language("C++") == Language.CPP
+
+
+def test_resolve_language_is_case_insensitive() -> None:
+    """Lowercase and mixed-case names normalize to the canonical value."""
+    assert resolve_language("python") == Language.PYTHON
+    assert resolve_language("PYTHON") == Language.PYTHON
+    assert resolve_language("c++") == Language.CPP
+
+
+def test_resolve_language_ignores_surrounding_whitespace() -> None:
+    """Surrounding whitespace is stripped before matching."""
+    assert resolve_language("  python  ") == Language.PYTHON
+
+
+def test_resolve_language_returns_none_for_unknown() -> None:
+    """Names outside the supported set resolve to None."""
+    assert resolve_language("brainfuck") is None
+    assert resolve_language("") is None
