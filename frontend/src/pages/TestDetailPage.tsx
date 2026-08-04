@@ -21,10 +21,11 @@ export function TestDetailPage() {
 
   const results = usePolling(
     () => (activeLanguage ? api.getTestResults(runId, activeLanguage) : Promise.resolve(null)),
-    { interval: 8000, done: (data) => data !== null },
+    { interval: 8000, done: (data) => data !== null, deps: [runId, activeLanguage] },
   )
 
   const suite = results.data
+  const failures = suite?.cases.filter((test) => test.outcome !== 'passed' && test.message) ?? []
 
   return (
     <Stack gap="lg">
@@ -150,14 +151,10 @@ export function TestDetailPage() {
                 </Table.ScrollContainer>
               )}
 
-              {suite.cases.filter((test) => test.outcome !== 'passed' && test.message).length >
-              0 ? (
+              {failures.length > 0 ? (
                 <CodeViewer
                   title="Failures"
-                  code={suite.cases
-                    .filter((test) => test.outcome !== 'passed' && test.message)
-                    .map((test) => `--- ${test.name}\n${test.message}`)
-                    .join('\n\n')}
+                  code={failures.map((test) => `--- ${test.name}\n${test.message}`).join('\n\n')}
                   maxHeight={260}
                 />
               ) : null}

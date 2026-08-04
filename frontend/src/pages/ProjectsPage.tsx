@@ -1,4 +1,4 @@
-import { Alert, Button, Group, Stack, Text } from '@mantine/core'
+import { Button, Group, Stack, Text } from '@mantine/core'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { DetailLink, HistoryTable, type HistoryColumn } from '../components/HistoryTable'
@@ -89,20 +89,15 @@ export function ProjectsPage() {
       </SectionCard>
 
       <SectionCard title="All projects" subtitle="Indexed repositories" delay={120}>
-        {projects.error ? (
-          <Alert color="red" title="Failed to load projects">
-            {projects.error}
-          </Alert>
-        ) : (
-          <HistoryTable
-            rows={projects.data ?? []}
-            columns={columns}
-            getRowId={(project) => project.id}
-            loading={projects.loading}
-            error={null}
-            emptyLabel="No projects yet — upload a repository above."
-          />
-        )}
+        <HistoryTable
+          rows={projects.data ?? []}
+          columns={columns}
+          getRowId={(project) => project.id}
+          loading={projects.loading}
+          error={projects.error}
+          errorTitle="Failed to load projects"
+          emptyLabel="No projects yet — upload a repository above."
+        />
       </SectionCard>
     </Stack>
   )

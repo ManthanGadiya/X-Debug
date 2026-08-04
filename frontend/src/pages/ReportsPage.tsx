@@ -14,11 +14,11 @@ export function ReportsPage() {
 
   const localization = usePolling(
     () => (projectId ? api.getLocalization(projectId) : Promise.resolve(null)),
-    { interval: 8000, done: (data) => data !== null && data.status !== 'running' },
+    { interval: 8000, done: (data) => data !== null && data.status !== 'running', deps: [projectId] },
   )
   const explanation = usePolling(
     () => (projectId ? api.getExplanation(projectId) : Promise.resolve(null)),
-    { interval: 8000, done: (data) => data !== null && data.status !== 'running' },
+    { interval: 8000, done: (data) => data !== null && data.status !== 'running', deps: [projectId] },
   )
 
   const [running, setRunning] = useState<'localize' | 'explain' | null>(null)

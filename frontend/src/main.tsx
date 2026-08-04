@@ -11,6 +11,7 @@ import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 import './styles.css'
 import { AppLayout } from './components/AppLayout'
+import { ErrorPage } from './components/ErrorPage'
 import { AnalysisDetailPage } from './pages/AnalysisDetailPage'
 import { AnalysisPage } from './pages/AnalysisPage'
 import { DashboardPage } from './pages/DashboardPage'
@@ -26,6 +27,7 @@ import { theme } from './theme'
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { path: '/', element: <DashboardPage /> },
       { path: '/projects', element: <ProjectsPage /> },
