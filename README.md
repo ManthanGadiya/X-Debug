@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 7 — Explanation Engine — implemented on branch
-* **Branch:** `feature/bug-localization` (not yet merged)
+* **Milestone:** Phase 7 — Explanation Engine — complete
+* **Branch:** `main` (released from `develop`)
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
