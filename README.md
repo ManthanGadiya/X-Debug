@@ -7,8 +7,8 @@
 
 ## Current Status
 
-* **Milestone:** Phase 8 — Frontend — complete
-* **Branch:** `feature/frontend-dashboard`
+* **Milestone:** Phase 9 — Testing & Optimization — frontend test gate green
+* **Branch:** `feature/frontend-tests`
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
   * Frontend foundation (React + Mantine + Vite): routing, theme, API client, dashboard home page with backend health check
@@ -29,7 +29,8 @@
   * Frontend test views: test run list and detail with per-suite case tables and failure viewers (`/tests`, `/tests/{id}`)
   * Frontend report views: per-project localization and explanation reports with confidence scores, evidence viewer, and propagation timeline (`/reports`)
   * Frontend visualization components: graph viewer, code viewer, evidence viewer, status badges, stat cards, and report viewers in the diagnostic-instrument style
-* **Next milestone:** Phase 9 — Testing & Optimization
+  * Frontend page test suites: Vitest + Testing Library coverage for all nine dashboard pages (45 tests) — dashboard, projects, analysis, runtime, tests, reports, and their detail views, including graph rendering, code viewer, language selectors, replay stepping, and polling behavior — with a green gate across test, typecheck, lint, and build
+* **Next milestone:** Phase 9 continued — optimization pass and backend test coverage
 
 Quick start:
 
