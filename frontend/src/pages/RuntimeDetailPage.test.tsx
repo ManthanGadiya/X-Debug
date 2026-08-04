@@ -110,7 +110,9 @@ describe('RuntimeDetailPage', () => {
 
     expect(await screen.findByText('Execution trace')).toBeInTheDocument()
     expect(await screen.findByText('hello')).toBeInTheDocument()
-    expect(await screen.findByText('4 events · max stack depth 3 · call×2 · return×2')).toBeInTheDocument()
+    expect(
+      await screen.findByText('4 events · max stack depth 3 · call×2 · return×2'),
+    ).toBeInTheDocument()
   })
 
   it('starts a replay and shows the first step', async () => {

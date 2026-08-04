@@ -100,9 +100,36 @@ describe('ProjectDetailPage', () => {
 
   it('lists analysis, runtime, and test runs for the project', async () => {
     mockRoutes({
-      analysis: [{ id: 'an-1', project_id: 'proj-1', status: 'ready', created_at: '2026-07-24T12:00:00Z', updated_at: '2026-07-24T12:01:00Z', error: null }],
-      runtime: [{ id: 'rt-1', project_id: 'proj-1', status: 'ready', created_at: '2026-07-24T12:00:00Z', updated_at: '2026-07-24T12:01:00Z', error: null }],
-      tests: [{ id: 'ts-1', project_id: 'proj-1', status: 'ready', created_at: '2026-07-24T12:00:00Z', updated_at: '2026-07-24T12:01:00Z', error: null }],
+      analysis: [
+        {
+          id: 'an-1',
+          project_id: 'proj-1',
+          status: 'ready',
+          created_at: '2026-07-24T12:00:00Z',
+          updated_at: '2026-07-24T12:01:00Z',
+          error: null,
+        },
+      ],
+      runtime: [
+        {
+          id: 'rt-1',
+          project_id: 'proj-1',
+          status: 'ready',
+          created_at: '2026-07-24T12:00:00Z',
+          updated_at: '2026-07-24T12:01:00Z',
+          error: null,
+        },
+      ],
+      tests: [
+        {
+          id: 'ts-1',
+          project_id: 'proj-1',
+          status: 'ready',
+          created_at: '2026-07-24T12:00:00Z',
+          updated_at: '2026-07-24T12:01:00Z',
+          error: null,
+        },
+      ],
     })
 
     renderPage()

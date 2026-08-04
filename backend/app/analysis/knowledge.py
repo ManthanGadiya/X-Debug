@@ -534,9 +534,9 @@ def _same_source(file: str, filename: str) -> bool:
         return True
     normalized_file = file.replace("\\", "/")
     normalized_filename = filename.replace("\\", "/")
-    return normalized_file.endswith(
-        f"/{normalized_filename}"
-    ) or normalized_filename.endswith(f"/{normalized_file}")
+    return normalized_file.endswith(f"/{normalized_filename}") or normalized_filename.endswith(
+        f"/{normalized_file}"
+    )
 
 
 def _add_executes_after(graph: Graph, sequence: Iterable[str]) -> None:

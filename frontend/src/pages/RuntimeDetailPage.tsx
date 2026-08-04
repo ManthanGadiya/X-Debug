@@ -162,7 +162,8 @@ export function RuntimeDetailPage() {
                       Start replay
                     </Button>
                     <Text size="sm" c="dimmed">
-                      {replay.data.total_events} events · max stack depth {replay.data.max_stack_depth} ·{' '}
+                      {replay.data.total_events} events · max stack depth{' '}
+                      {replay.data.max_stack_depth} ·{' '}
                       {Object.entries(replay.data.count_by_type)
                         .map(([type, count]) => `${type}×${count}`)
                         .join(' · ')}
@@ -208,10 +209,20 @@ function ReplayStepView({ step, onSelect, hasPrevious, hasNext }: ReplayStepView
           </Text>
         </Group>
         <Group gap="xs">
-          <Button size="xs" variant="light" disabled={!hasPrevious} onClick={() => onSelect(step.previous_index)}>
+          <Button
+            size="xs"
+            variant="light"
+            disabled={!hasPrevious}
+            onClick={() => onSelect(step.previous_index)}
+          >
             Prev
           </Button>
-          <Button size="xs" variant="light" disabled={!hasNext} onClick={() => onSelect(step.next_index)}>
+          <Button
+            size="xs"
+            variant="light"
+            disabled={!hasNext}
+            onClick={() => onSelect(step.next_index)}
+          >
             Next
           </Button>
         </Group>

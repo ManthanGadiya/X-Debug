@@ -35,7 +35,11 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         size="xs"
         tt="uppercase"
         fw={500}
-        style={{ fontFamily: 'var(--xmono)', letterSpacing: '0.08em', color: 'var(--mantine-color-text)' }}
+        style={{
+          fontFamily: 'var(--xmono)',
+          letterSpacing: '0.08em',
+          color: 'var(--mantine-color-text)',
+        }}
       >
         {display}
       </Text>

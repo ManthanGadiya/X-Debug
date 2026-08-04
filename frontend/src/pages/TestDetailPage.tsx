@@ -69,7 +69,11 @@ export function TestDetailPage() {
             />
             <StatCard label="Tests run" value={String(run.tests_run)} />
             <StatCard label="Passed" value={String(run.passed)} tone="signal" />
-            <StatCard label="Failed" value={String(run.failed)} tone={run.failed > 0 ? 'danger' : 'default'} />
+            <StatCard
+              label="Failed"
+              value={String(run.failed)}
+              tone={run.failed > 0 ? 'danger' : 'default'}
+            />
             <StatCard label="Skipped" value={String(run.skipped)} />
             <StatCard label="Languages" value={run.languages.join(', ') || '—'} />
           </Group>
@@ -146,7 +150,8 @@ export function TestDetailPage() {
                 </Table.ScrollContainer>
               )}
 
-              {suite.cases.filter((test) => test.outcome !== 'passed' && test.message).length > 0 ? (
+              {suite.cases.filter((test) => test.outcome !== 'passed' && test.message).length >
+              0 ? (
                 <CodeViewer
                   title="Failures"
                   code={suite.cases

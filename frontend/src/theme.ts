@@ -52,8 +52,7 @@ export const theme = createTheme({
     dark,
   },
   fontFamily: "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  fontFamilyMonospace:
-    "'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace",
+  fontFamilyMonospace: "'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace",
   headings: {
     fontFamily: "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontWeight: '600',

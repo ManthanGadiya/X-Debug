@@ -78,8 +78,6 @@ describe('RuntimePage', () => {
 
     renderPage('/runtime?project=proj-1')
 
-    expect(
-      await screen.findByRole('button', { name: 'Run code' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Run code' })).toBeInTheDocument()
   })
 })

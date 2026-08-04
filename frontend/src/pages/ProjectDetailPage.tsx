@@ -44,7 +44,9 @@ export function ProjectDetailPage() {
     },
   ]
 
-  const runColumns = (prefix: string): HistoryColumn<{
+  const runColumns = (
+    prefix: string,
+  ): HistoryColumn<{
     id: string
     status: string
     createdAt: string
@@ -170,7 +172,11 @@ export function ProjectDetailPage() {
               </Alert>
             ) : (
               <HistoryTable
-                rows={projectAnalysis.map((run) => ({ id: run.id, status: run.status, createdAt: run.created_at }))}
+                rows={projectAnalysis.map((run) => ({
+                  id: run.id,
+                  status: run.status,
+                  createdAt: run.created_at,
+                }))}
                 columns={runColumns('/analysis')}
                 getRowId={(run) => run.id}
                 loading={analysis.loading}
@@ -191,7 +197,11 @@ export function ProjectDetailPage() {
               </Alert>
             ) : (
               <HistoryTable
-                rows={projectRuntime.map((run) => ({ id: run.id, status: run.status, createdAt: run.created_at }))}
+                rows={projectRuntime.map((run) => ({
+                  id: run.id,
+                  status: run.status,
+                  createdAt: run.created_at,
+                }))}
                 columns={runColumns('/runtime')}
                 getRowId={(run) => run.id}
                 loading={runtime.loading}
@@ -208,7 +218,11 @@ export function ProjectDetailPage() {
               </Alert>
             ) : (
               <HistoryTable
-                rows={projectTests.map((run) => ({ id: run.id, status: run.status, createdAt: run.created_at }))}
+                rows={projectTests.map((run) => ({
+                  id: run.id,
+                  status: run.status,
+                  createdAt: run.created_at,
+                }))}
                 columns={runColumns('/tests')}
                 getRowId={(run) => run.id}
                 loading={tests.loading}

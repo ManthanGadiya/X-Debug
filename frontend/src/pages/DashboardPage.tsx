@@ -20,9 +20,11 @@ export function DashboardPage() {
   const healthError = health.error
 
   const projectCount = projects.data?.length ?? 0
-  const runningCount = [...(analysis.data ?? []), ...(runtime.data ?? []), ...(tests.data ?? [])].filter(
-    (run) => run.status === 'running' || run.status === 'queued',
-  ).length
+  const runningCount = [
+    ...(analysis.data ?? []),
+    ...(runtime.data ?? []),
+    ...(tests.data ?? []),
+  ].filter((run) => run.status === 'running' || run.status === 'queued').length
 
   const projectColumns: HistoryColumn<ProjectSummary>[] = [
     {
@@ -79,13 +81,21 @@ export function DashboardPage() {
 
       <Grid gap="md">
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-          <StatCard label="Backend" value={healthError ? 'OFFLINE' : 'ONLINE'} tone={healthError ? 'danger' : 'signal'} />
+          <StatCard
+            label="Backend"
+            value={healthError ? 'OFFLINE' : 'ONLINE'}
+            tone={healthError ? 'danger' : 'signal'}
+          />
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
           <StatCard label="Projects" value={String(projectCount)} />
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-          <StatCard label="Active jobs" value={String(runningCount)} tone={runningCount > 0 ? 'brand' : 'default'} />
+          <StatCard
+            label="Active jobs"
+            value={String(runningCount)}
+            tone={runningCount > 0 ? 'brand' : 'default'}
+          />
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
           <StatCard label="Analysis" value={String(analysis.data?.length ?? 0)} />

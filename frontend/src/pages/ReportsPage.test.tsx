@@ -138,14 +138,14 @@ describe('ReportsPage', () => {
 
     await selectProject()
 
-    expect(
-      await screen.findByText('Root-cause localization'),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Root-cause localization')).toBeInTheDocument()
     expect(await screen.findByText('85%')).toBeInTheDocument()
     expect(
       await screen.findByText('The failure originates in the payment handler.'),
     ).toBeInTheDocument()
-    expect(await screen.findByText('The discount lookup returns None for unknown codes.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('The discount lookup returns None for unknown codes.'),
+    ).toBeInTheDocument()
   })
 
   it('runs localization and refreshes the report', async () => {
@@ -179,7 +179,9 @@ describe('ReportsPage', () => {
       expect.stringContaining('/explanation/proj-1'),
       expect.objectContaining({ method: 'POST' }),
     )
-    expect(await screen.findByText('The discount lookup returns None for unknown codes.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('The discount lookup returns None for unknown codes.'),
+    ).toBeInTheDocument()
   })
 
   it('shows an error alert when loading localization fails', async () => {

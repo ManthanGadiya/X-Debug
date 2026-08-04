@@ -108,9 +108,7 @@ class Container:
     def explanation_manager(self) -> ExplanationManager:
         """Return the lazily constructed explanation manager."""
         if self._explanation_manager is None:
-            self._explanation_manager = ExplanationManager(
-                generator=ExplanationGenerator()
-            )
+            self._explanation_manager = ExplanationManager(generator=ExplanationGenerator())
         return self._explanation_manager
 
     @property
