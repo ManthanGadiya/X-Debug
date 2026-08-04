@@ -10,10 +10,33 @@ from fastapi import APIRouter, File, UploadFile
 
 from app.container import ContainerDep
 from app.projects.loader import Project
-from app.schemas import GitHubCloneRequest, ProjectDetail
+from app.schemas import GitHubCloneRequest, ProjectDetail, ProjectSummary
 from app.schemas.projects import SourceFile
 
 router = APIRouter(prefix="/projects", tags=["projects"])
+
+
+@router.get(
+    "",
+    response_model=list[ProjectSummary],
+    summary="List ingested projects",
+)
+def list_projects(container: ContainerDep) -> list[ProjectSummary]:
+    """Return all previously ingested projects, most recent first."""
+    return [
+        ProjectSummary(
+            id=project.id,
+            name=project.name,
+            source=project.source,
+            root_path=project.root_path,
+            file_count=len(project.files),
+            source_file_count=len(project.source_files),
+            total_size_bytes=project.total_size_bytes,
+            languages=project.languages,
+            created_at=project.created_at,
+        )
+        for project in container.repository_manager.list_projects()
+    ]
 
 
 @router.post(

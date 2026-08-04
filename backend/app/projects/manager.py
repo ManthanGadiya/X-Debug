@@ -106,6 +106,18 @@ class RepositoryManager:
                 detail={"project_id": project_id},
             ) from None
 
+    def list_projects(self) -> list[Project]:
+        """Return all ingested projects, most recently created first."""
+        projects = list(self._projects.values())
+        return [
+            project
+            for _, project in sorted(
+                enumerate(projects),
+                key=lambda item: (item[1].created_at, item[0]),
+                reverse=True,
+            )
+        ]
+
     def _extract_zip(self, content: bytes, destination: Path) -> None:
         destination.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(BytesIO(content)) as archive:

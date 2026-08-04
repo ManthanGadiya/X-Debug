@@ -79,3 +79,34 @@ def test_github_ingest_validates_url(client: TestClient) -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_list_projects_empty(client: TestClient) -> None:
+    """Listing projects before any ingestion returns an empty list."""
+    response = client.get("/api/v1/projects")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_list_projects_returns_ingested_newest_first(client: TestClient) -> None:
+    """Ingested projects appear in the listing, most recent first."""
+    first_id = _ingest_id(client, "first.zip", {"a.py": "print(1)\n"})
+    second_id = _ingest_id(client, "second.zip", {"b.py": "print(2)\n"})
+
+    response = client.get("/api/v1/projects")
+    assert response.status_code == 200
+    body = response.json()
+
+    assert [project["id"] for project in body] == [second_id, first_id]
+    assert body[0]["name"] == "second"
+    assert body[0]["languages"] == ["Python"]
+
+
+def _ingest_id(client: TestClient, filename: str, files: dict[str, str]) -> str:
+    response = client.post(
+        "/api/v1/projects/upload",
+        files={"file": (filename, _zip_payload(files), "application/zip")},
+    )
+    assert response.status_code == 200
+    return response.json()["id"]

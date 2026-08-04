@@ -24,6 +24,16 @@ from app.schemas.runtime import (
 router = APIRouter(prefix="/tests", tags=["tests"])
 
 
+@router.get(
+    "",
+    response_model=list[TestSummary],
+    summary="List test runs",
+)
+def list_test_runs(container: ContainerDep) -> list[TestSummary]:
+    """Return all test execution runs, most recent first."""
+    return [_to_summary(record) for record in container.test_manager.list()]
+
+
 @router.post(
     "/run",
     response_model=TestSummary,

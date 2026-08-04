@@ -33,6 +33,16 @@ from app.schemas.runtime import (
 router = APIRouter(prefix="/runtime", tags=["runtime"])
 
 
+@router.get(
+    "",
+    response_model=list[RuntimeSummary],
+    summary="List runtime runs",
+)
+def list_runtime_runs(container: ContainerDep) -> list[RuntimeSummary]:
+    """Return all runtime execution runs, most recent first."""
+    return [_to_summary(record) for record in container.runtime_manager.list()]
+
+
 @router.post(
     "/run",
     response_model=RuntimeSummary,
