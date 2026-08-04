@@ -220,8 +220,10 @@ def test_c_failing_test_reported_per_case(tmp_path: Path) -> None:
     """A failing C test is reported as a failed case."""
     project = _make_project(
         tmp_path,
-        {"test_main.c": "#include <assert.h>\nint main(void) {\n    assert(1 == 2);\n"
-        "    return 0;\n}\n"},
+        {
+            "test_main.c": "#include <assert.h>\nint main(void) {\n    assert(1 == 2);\n"
+            "    return 0;\n}\n"
+        },
     )
     runner = TestRunner(timeout_seconds=60)
     result = runner.run(project)

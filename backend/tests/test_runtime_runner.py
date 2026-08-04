@@ -105,11 +105,11 @@ def test_run_cpp_compiles_and_executes_when_toolchain_available(tmp_path: Path) 
     """A C++ target compiles and runs when a toolchain is available."""
     entry = tmp_path / "main.cpp"
     source = (
-        '#include <iostream>\n'
-        'int main() {\n'
+        "#include <iostream>\n"
+        "int main() {\n"
         '    std::cout << "hi cpp";\n'
-        '    return 0;\n'
-        '}\n'
+        "    return 0;\n"
+        "}\n"
     )
     entry.write_text(source, encoding="utf-8")
     runner = RuntimeRunner(timeout_seconds=30)
@@ -193,7 +193,10 @@ def test_run_python_truncates_long_output(tmp_path: Path) -> None:
 def test_run_python_limits_trace_events(tmp_path: Path) -> None:
     """The captured trace respects the maximum event count."""
     entry = tmp_path / "many.py"
-    entry.write_text("def a():\n    return 1\n\ndef b():\n    return a() + 1\n\nprint(b())\n", encoding="utf-8")
+    entry.write_text(
+        "def a():\n    return 1\n\ndef b():\n    return a() + 1\n\nprint(b())\n",
+        encoding="utf-8",
+    )
     runner = RuntimeRunner(timeout_seconds=15, max_trace_events=2)
     result = runner.run_python(entry, tmp_path)
 
