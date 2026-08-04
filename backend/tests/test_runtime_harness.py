@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from types import SimpleNamespace
 
 from app.runtime.harness import TraceCollector, _run_target, _safe, _short_path, _snapshot
@@ -153,3 +154,15 @@ def test_run_target_writes_trace_on_failure(tmp_path) -> None:
     payload = json.loads(trace_path.read_text(encoding="utf-8"))
     assert payload["last_exception"] is not None
     assert payload["last_exception"]["type"] == "RuntimeError"
+
+
+def test_run_target_restores_previous_trace_function(tmp_path) -> None:
+    """The ambient trace function survives a target run (e.g. coverage)."""
+    source = tmp_path / "ok.py"
+    source.write_text("x = 1\n", encoding="utf-8")
+    prev = sys.gettrace()
+    try:
+        assert _run_target(source, []) == 0
+        assert sys.gettrace() is prev
+    finally:
+        sys.settrace(prev)
