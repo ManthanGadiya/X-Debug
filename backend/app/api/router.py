@@ -10,6 +10,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     analysis,
+    explanation,
     health,
     knowledge,
     localization,
@@ -26,3 +27,4 @@ api_router.include_router(runtime.router)
 api_router.include_router(tests.router)
 api_router.include_router(knowledge.router)
 api_router.include_router(localization.router)
+api_router.include_router(explanation.router)

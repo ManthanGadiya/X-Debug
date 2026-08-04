@@ -8,6 +8,11 @@ from app.schemas.analysis import (
     GraphEdgeSchema,
     GraphNodeSchema,
 )
+from app.schemas.explanation import (
+    EvidenceReferenceSchema,
+    ExplanationDetail,
+    WhereReferenceSchema,
+)
 from app.schemas.health import HealthResponse
 from app.schemas.knowledge import (
     KnowledgeBuildRequest,
@@ -32,7 +37,9 @@ __all__ = [
     "AnalysisDetail",
     "AnalysisStartRequest",
     "AnalysisSummary",
+    "EvidenceReferenceSchema",
     "EvidenceSchema",
+    "ExplanationDetail",
     "GitHubCloneRequest",
     "GraphData",
     "GraphEdgeSchema",
@@ -48,4 +55,5 @@ __all__ = [
     "ProjectDetail",
     "ProjectSummary",
     "SourceFile",
+    "WhereReferenceSchema",
 ]
