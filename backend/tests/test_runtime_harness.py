@@ -4,10 +4,23 @@ from __future__ import annotations
 
 import json
 import os
+import runpy
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
-from app.runtime.harness import TraceCollector, _run_target, _safe, _short_path, _snapshot
+import app.runtime.harness as harness_module
+import pytest
+from app.runtime.harness import (
+    TraceCollector,
+    _is_within,
+    _run_target,
+    _safe,
+    _short_path,
+    _snapshot,
+    _trim_harness_frames,
+    main,
+)
 
 
 class _StubFrame:
@@ -166,3 +179,101 @@ def test_run_target_restores_previous_trace_function(tmp_path) -> None:
         assert sys.gettrace() is prev
     finally:
         sys.settrace(prev)
+
+
+def test_is_within_matches_root_nested_and_sibling(tmp_path: Path) -> None:
+    """Path containment handles equal, nested, and sibling paths."""
+    root = tmp_path / "repo"
+    inside = tmp_path / "repo" / "sub" / "main.py"
+    outside = tmp_path / "other" / "file.py"
+    prefix_trap = tmp_path / "repo-other" / "file.py"
+    assert _is_within(str(inside), str(root))
+    assert _is_within(str(root), str(root))
+    assert not _is_within(str(outside), str(root))
+    assert not _is_within(str(prefix_trap), str(root))
+
+
+def test_collector_skips_empty_filename() -> None:
+    """Events without a filename are skipped."""
+    collector = TraceCollector()
+    frame = _StubFrame()
+    frame.f_code = SimpleNamespace(co_name="anon", co_filename="")
+    assert callable(collector.trace_function(frame, "call", None))
+    assert collector.events == []
+
+
+def test_collector_filters_events_outside_root(tmp_path: Path) -> None:
+    """Events outside the configured root are skipped."""
+    outside = tmp_path.parent / "outside" / "file.py"
+    collector = TraceCollector(str(tmp_path))
+    frame = _StubFrame()
+    frame.f_code = SimpleNamespace(co_name="outside", co_filename=str(outside))
+    assert callable(collector.trace_function(frame, "call", None))
+    assert collector.events == []
+
+
+def test_run_target_prints_trace_without_harness_frames(tmp_path, capsys) -> None:
+    """The failure traceback omits frames owned by the harness."""
+    source = tmp_path / "boom.py"
+    source.write_text("raise RuntimeError('boom')\n", encoding="utf-8")
+    assert _run_target(source, []) == 1
+    captured = capsys.readouterr()
+    assert "RuntimeError" in captured.err
+    assert "boom.py" in captured.err
+    assert "harness.py" not in captured.err
+
+
+def test_run_target_invalid_syntax_returns_1(tmp_path) -> None:
+    """Invalid target source is reported as a failed run (exit 1)."""
+    source = tmp_path / "bad.py"
+    source.write_text("def broken(:\n", encoding="utf-8")
+    assert _run_target(source, []) == 1
+
+
+def test_trim_harness_frames_drops_matching_frames(monkeypatch) -> None:
+    """Frames matching the harness file are removed from a traceback."""
+
+    def raise_error() -> None:
+        raise RuntimeError("boom")
+
+    try:
+        raise_error()
+    except RuntimeError as exc:
+        tb = exc.__traceback__
+        original_head = tb.tb_frame.f_code.co_filename
+        monkeypatch.setattr(harness_module, "__file__", original_head)
+        trimmed = _trim_harness_frames(tb)
+
+    assert trimmed is None
+
+
+def test_main_missing_target_returns_2(tmp_path, monkeypatch, capsys) -> None:
+    """The CLI reports a missing target on stderr with exit code 2."""
+    missing = tmp_path / "does-not-exist.py"
+    monkeypatch.setattr(sys, "argv", ["harness", str(missing)])
+    assert main() == 2
+    assert "target not found" in capsys.readouterr().err
+
+
+def test_main_runs_valid_target(tmp_path, monkeypatch) -> None:
+    """The CLI executes a valid target successfully."""
+    source = tmp_path / "ok.py"
+    source.write_text("print('hi')\n", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["harness", str(source)])
+    assert main() == 0
+
+
+def test_main_without_target_exits_2(monkeypatch) -> None:
+    """Missing required CLI arguments exit with code 2."""
+    monkeypatch.setattr(sys, "argv", ["harness"])
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+    assert excinfo.value.code == 2
+
+
+def test_module_main_guard_exits_2(monkeypatch) -> None:
+    """Executing the module as __main__ routes through the CLI."""
+    monkeypatch.setattr(sys, "argv", ["harness"])
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(Path(harness_module.__file__)), run_name="__main__")
+    assert excinfo.value.code == 2

@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
 from app.projects.languages import Language
 from app.projects.loader import Project, ProjectLoader, SourceFileRecord
+from app.runtime.model import RuntimeResult, RuntimeStatus
 from app.runtime.runner import RuntimeRunner
 from app.runtime.service import (
     RuntimeAnalyzer,
@@ -140,3 +143,44 @@ def test_analyze_c_project_when_toolchain_available(tmp_path: Path) -> None:
         return
     assert c_result.succeeded
     assert c_result.stdout.strip() == "ok"
+
+
+class _RaisingRunner:
+    """Runner stub that raises for every language."""
+
+    def __init__(self, error: Exception) -> None:
+        self._error = error
+
+    def run_python(self, entry: Path, workdir: Path) -> RuntimeResult:
+        raise self._error
+
+    def run_c(self, entry: Path, workdir: Path) -> RuntimeResult:
+        raise AssertionError("unexpected C run")
+
+    def run_cpp(self, entry: Path, workdir: Path) -> RuntimeResult:
+        raise AssertionError("unexpected C++ run")
+
+
+@pytest.mark.parametrize("error", [OSError("boom"), ValueError("nope")])
+def test_analyze_runner_error_returns_failed(tmp_path: Path, error: Exception) -> None:
+    """Runner errors become structured failures instead of raising."""
+    project = _make_project(tmp_path, {"main.py": "print('x')\n"})
+    analyzer = RuntimeAnalyzer(runner=_RaisingRunner(error))
+    result = analyzer.analyze(project)
+
+    failed = result.results[Language.PYTHON.value]
+    assert failed.status == RuntimeStatus.FAILED
+    assert failed.error == f"Execution failed: {error}"
+
+
+def test_runner_for_returns_cpp_runner() -> None:
+    """The C++ language resolves to the C++ runner."""
+    runner = SimpleNamespace(run_cpp=object())
+    analyzer = RuntimeAnalyzer(runner=runner)
+    assert analyzer._runner_for(Language.CPP) is runner.run_cpp
+
+
+def test_defines_main_unreadable_path_returns_false(tmp_path: Path) -> None:
+    """Unreadable paths do not count as defining main."""
+    missing = tmp_path / "missing.c"
+    assert not _defines_main(missing)
