@@ -49,6 +49,9 @@ packages = ["app"]
 addopts = "--cov=app --cov-report=term-missing --cov-fail-under=90"
 testpaths = ["tests"]
 
+[tool.coverage.run]
+parallel = true
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
