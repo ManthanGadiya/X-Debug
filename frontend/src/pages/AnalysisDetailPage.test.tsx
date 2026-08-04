@@ -106,7 +106,10 @@ describe('AnalysisDetailPage', () => {
     const callGraph = screen.getByRole('radio', { name: 'Call graph' })
     callGraph.click()
 
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/graphs/call'), expect.anything())
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/graphs/call'),
+      expect.anything(),
+    )
   })
 
   it('shows an error alert when the analysis fails to load', async () => {

@@ -34,9 +34,7 @@ class ConfidenceScorer:
             self._weights.update(weights)
         total = sum(self._weights.values())
         if abs(total - 1.0) > 1e-6:
-            raise ValueError(
-                f"Evidence source weights must sum to 1.0, got {total:.4f}"
-            )
+            raise ValueError(f"Evidence source weights must sum to 1.0, got {total:.4f}")
 
     def confidence(self, evidence: Sequence[Evidence]) -> float:
         """Return the weighted confidence of a candidate's evidence list.
@@ -52,8 +50,7 @@ class ConfidenceScorer:
                 best_by_source[ev.source] = ev.score
         return round(
             sum(
-                weight * best_by_source.get(source, 0.0)
-                for source, weight in self._weights.items()
+                weight * best_by_source.get(source, 0.0) for source, weight in self._weights.items()
             ),
             4,
         )

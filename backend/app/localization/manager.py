@@ -79,9 +79,7 @@ class LocalizationManager:
             )
         now = datetime.now(UTC)
         try:
-            result = self._engine.localize(
-                graph, runtime, language=language, threshold=threshold
-            )
+            result = self._engine.localize(graph, runtime, language=language, threshold=threshold)
         except Exception as exc:  # pragma: no cover - defensive finalizer
             record = LocalizationRecord(
                 project_id=project_id,

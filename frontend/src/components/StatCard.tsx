@@ -27,11 +27,7 @@ export function StatCard({ label, value, hint, tone = 'default' }: StatCardProps
         >
           {label}
         </Text>
-        <Text
-          size="xl"
-          fw={600}
-          style={{ fontFamily: 'var(--xmono)', color: TONE_COLORS[tone] }}
-        >
+        <Text size="xl" fw={600} style={{ fontFamily: 'var(--xmono)', color: TONE_COLORS[tone] }}>
           {value}
         </Text>
         {hint ? (

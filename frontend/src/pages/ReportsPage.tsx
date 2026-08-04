@@ -65,7 +65,10 @@ export function ReportsPage() {
             <Select
               size="xs"
               placeholder="Select project"
-              data={(projects.data ?? []).map((project) => ({ value: project.id, label: project.name }))}
+              data={(projects.data ?? []).map((project) => ({
+                value: project.id,
+                label: project.name,
+              }))}
               value={projectId}
               onChange={setProjectId}
               clearable
@@ -137,7 +140,11 @@ export function ReportsPage() {
             )}
           </SectionCard>
 
-          <SectionCard title="Explanation" subtitle="Why the failure happens, with evidence" delay={120}>
+          <SectionCard
+            title="Explanation"
+            subtitle="Why the failure happens, with evidence"
+            delay={120}
+          >
             {explanation.error ? (
               <Alert color="red" title="Failed to load explanation">
                 {explanation.error}

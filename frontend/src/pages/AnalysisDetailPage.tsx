@@ -66,7 +66,11 @@ export function AnalysisDetailPage() {
         <>
           <Group gap="md" wrap="wrap">
             <StatCard label="Files parsed" value={String(run.parsed_file_count)} tone="signal" />
-            <StatCard label="Failed files" value={String(run.failed_file_count)} tone={run.failed_file_count > 0 ? 'danger' : 'default'} />
+            <StatCard
+              label="Failed files"
+              value={String(run.failed_file_count)}
+              tone={run.failed_file_count > 0 ? 'danger' : 'default'}
+            />
             <StatCard label="Dependency edges" value={String(run.dependency_edge_count)} />
             <StatCard label="Call edges" value={String(run.call_edge_count)} />
             <StatCard label="CFG nodes" value={String(run.cfg_node_count)} />

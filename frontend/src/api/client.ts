@@ -310,7 +310,11 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const { method = 'GET', body, formData, query } = options
   const response = await fetch(buildUrl(path, query), {
     method,
-    headers: formData ? undefined : body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+    headers: formData
+      ? undefined
+      : body !== undefined
+        ? { 'Content-Type': 'application/json' }
+        : undefined,
     body: formData ?? (body !== undefined ? JSON.stringify(body) : undefined),
   })
 
@@ -346,7 +350,10 @@ export const api = {
 
   listAnalysis: () => request<AnalysisSummary[]>('/analysis'),
   startAnalysis: (projectId: string) =>
-    request<AnalysisSummary>('/analysis/start', { method: 'POST', body: { project_id: projectId } }),
+    request<AnalysisSummary>('/analysis/start', {
+      method: 'POST',
+      body: { project_id: projectId },
+    }),
   getAnalysis: (analysisId: string) => request<AnalysisDetail>(`/analysis/${analysisId}`),
   getGraph: (analysisId: string, kind: GraphKind) =>
     request<GraphData>(`/analysis/${analysisId}/graphs/${kind}`),
@@ -377,7 +384,10 @@ export const api = {
     request<TestSuiteDetail>(`/tests/${runId}/results/${language}`),
 
   buildKnowledge: (projectId: string) =>
-    request<KnowledgeDetail>('/knowledge/build', { method: 'POST', body: { project_id: projectId } }),
+    request<KnowledgeDetail>('/knowledge/build', {
+      method: 'POST',
+      body: { project_id: projectId },
+    }),
   getKnowledge: (projectId: string) => request<KnowledgeDetail>(`/knowledge/${projectId}`),
 
   runLocalization: (projectId: string, language = 'python') =>
@@ -385,11 +395,9 @@ export const api = {
       method: 'POST',
       body: { language },
     }),
-  getLocalization: (projectId: string) =>
-    request<LocalizationDetail>(`/localization/${projectId}`),
+  getLocalization: (projectId: string) => request<LocalizationDetail>(`/localization/${projectId}`),
 
   runExplanation: (projectId: string) =>
     request<ExplanationDetail>(`/explanation/${projectId}`, { method: 'POST' }),
-  getExplanation: (projectId: string) =>
-    request<ExplanationDetail>(`/explanation/${projectId}`),
+  getExplanation: (projectId: string) => request<ExplanationDetail>(`/explanation/${projectId}`),
 }

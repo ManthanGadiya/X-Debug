@@ -55,9 +55,7 @@ def test_localize_after_crash(client: TestClient) -> None:
     _start_run(client, project_id)
     _build(client, project_id)
 
-    response = client.post(
-        f"/api/v1/localization/{project_id}", json={"language": "python"}
-    )
+    response = client.post(f"/api/v1/localization/{project_id}", json={"language": "python"})
 
     assert response.status_code == 200
     body = response.json()
@@ -78,9 +76,7 @@ def test_localize_without_runtime_is_unresolved(client: TestClient) -> None:
     _start_analysis(client, project_id)
     _build(client, project_id)
 
-    response = client.post(
-        f"/api/v1/localization/{project_id}", json={"language": "python"}
-    )
+    response = client.post(f"/api/v1/localization/{project_id}", json={"language": "python"})
 
     assert response.status_code == 200
     body = response.json()
@@ -119,9 +115,7 @@ def test_localize_unsupported_language_returns_422(client: TestClient) -> None:
     """Unsupported languages are rejected with the structured error envelope."""
     project_id = _ingest(client, _HEALTHY_PROJECT)
 
-    response = client.post(
-        f"/api/v1/localization/{project_id}", json={"language": "brainfuck"}
-    )
+    response = client.post(f"/api/v1/localization/{project_id}", json={"language": "brainfuck"})
 
     assert response.status_code == 422
     assert response.json()["status"] == "error"
@@ -134,9 +128,7 @@ def test_localize_accepts_canonical_language(client: TestClient) -> None:
     _start_run(client, project_id)
     _build(client, project_id)
 
-    response = client.post(
-        f"/api/v1/localization/{project_id}", json={"language": "Python"}
-    )
+    response = client.post(f"/api/v1/localization/{project_id}", json={"language": "Python"})
 
     assert response.status_code == 200
     assert response.json()["status"] == "ready"
@@ -146,9 +138,7 @@ def test_localize_without_knowledge_returns_404(client: TestClient) -> None:
     """A project with no built knowledge graph is not localizable."""
     project_id = _ingest(client, _HEALTHY_PROJECT)
 
-    response = client.post(
-        f"/api/v1/localization/{project_id}", json={"language": "python"}
-    )
+    response = client.post(f"/api/v1/localization/{project_id}", json={"language": "python"})
 
     assert response.status_code == 404
     assert response.json()["status"] == "error"
