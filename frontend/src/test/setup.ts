@@ -21,3 +21,15 @@ if (!window.matchMedia) {
     }),
   })
 }
+
+if (!('ResizeObserver' in window)) {
+  class ResizeObserverMock {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  Object.defineProperty(window, 'ResizeObserver', {
+    writable: true,
+    value: ResizeObserverMock,
+  })
+}
