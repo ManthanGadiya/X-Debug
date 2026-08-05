@@ -1,11 +1,11 @@
 import { Alert, Button, Group, Stack, Text } from '@mantine/core'
 import { Link, useParams } from 'react-router-dom'
 import { api, type ProjectDetail } from '../api/client'
-import { DetailLink, HistoryTable, type HistoryColumn } from '../components/HistoryTable'
+import { HistoryTable, type HistoryColumn } from '../components/HistoryTable'
 import { PageHeader } from '../components/PageHeader'
+import { RunHistoryCard } from '../components/RunHistoryCard'
 import { SectionCard } from '../components/SectionCard'
 import { StatCard } from '../components/StatCard'
-import { StatusBadge } from '../components/StatusBadge'
 import { usePolling } from '../hooks/usePolling'
 import { formatBytes, formatDate } from '../utils/format'
 
@@ -29,36 +29,6 @@ const fileColumns: HistoryColumn<ProjectDetail['files'][number]>[] = [
     key: 'size',
     header: 'Size',
     render: (file) => <Text c="dimmed">{formatBytes(file.size_bytes)}</Text>,
-  },
-]
-
-const runColumns = (
-  prefix: string,
-): HistoryColumn<{
-  id: string
-  status: string
-  createdAt: string
-}>[] => [
-  {
-    key: 'id',
-    header: 'Run',
-    render: (run) => (
-      <DetailLink to={`${prefix}/${run.id}`}>
-        <Text c="brand" style={{ fontFamily: 'var(--xmono)' }}>
-          {run.id.slice(0, 12)}
-        </Text>
-      </DetailLink>
-    ),
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (run) => <StatusBadge status={run.status} />,
-  },
-  {
-    key: 'created',
-    header: 'Created',
-    render: (run) => <Text c="dimmed">{formatDate(run.createdAt)}</Text>,
   },
 ]
 
@@ -161,61 +131,41 @@ export function ProjectDetailPage() {
             )}
           </SectionCard>
 
-          <SectionCard
+          <RunHistoryCard
             title="Analysis runs"
             subtitle="Static pipeline history for this project"
             delay={120}
-          >
-            <HistoryTable
-              rows={projectAnalysis.map((run) => ({
-                id: run.id,
-                status: run.status,
-                createdAt: run.created_at,
-              }))}
-              columns={runColumns('/analysis')}
-              getRowId={(run) => run.id}
-              loading={analysis.loading}
-              error={analysis.error}
-              errorTitle="Failed to load analysis runs"
-              emptyLabel="No analysis runs yet — start one from the Analysis page."
-            />
-          </SectionCard>
+            prefix="/analysis"
+            runs={projectAnalysis}
+            loading={analysis.loading}
+            error={analysis.error}
+            errorTitle="Failed to load analysis runs"
+            emptyLabel="No analysis runs yet — start one from the Analysis page."
+          />
 
-          <SectionCard
+          <RunHistoryCard
             title="Runtime runs"
             subtitle="Execution trace history for this project"
             delay={180}
-          >
-            <HistoryTable
-              rows={projectRuntime.map((run) => ({
-                id: run.id,
-                status: run.status,
-                createdAt: run.created_at,
-              }))}
-              columns={runColumns('/runtime')}
-              getRowId={(run) => run.id}
-              loading={runtime.loading}
-              error={runtime.error}
-              errorTitle="Failed to load runtime runs"
-              emptyLabel="No runtime runs yet — start one from the Runtime page."
-            />
-          </SectionCard>
+            prefix="/runtime"
+            runs={projectRuntime}
+            loading={runtime.loading}
+            error={runtime.error}
+            errorTitle="Failed to load runtime runs"
+            emptyLabel="No runtime runs yet — start one from the Runtime page."
+          />
 
-          <SectionCard title="Test runs" subtitle="Test history for this project" delay={240}>
-            <HistoryTable
-              rows={projectTests.map((run) => ({
-                id: run.id,
-                status: run.status,
-                createdAt: run.created_at,
-              }))}
-              columns={runColumns('/tests')}
-              getRowId={(run) => run.id}
-              loading={tests.loading}
-              error={tests.error}
-              errorTitle="Failed to load test runs"
-              emptyLabel="No test runs yet — start one from the Tests page."
-            />
-          </SectionCard>
+          <RunHistoryCard
+            title="Test runs"
+            subtitle="Test history for this project"
+            delay={240}
+            prefix="/tests"
+            runs={projectTests}
+            loading={tests.loading}
+            error={tests.error}
+            errorTitle="Failed to load test runs"
+            emptyLabel="No test runs yet — start one from the Tests page."
+          />
         </>
       ) : null}
     </Stack>
