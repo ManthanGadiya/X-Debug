@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from app.core.config import Settings
 
 
@@ -13,6 +15,19 @@ def test_settings_defaults() -> None:
     assert settings.max_repository_size_mb == 200
     assert settings.analysis_timeout_seconds == 300
     assert settings.cors_origins == ["http://localhost:5173", "http://localhost:3000"]
+
+
+def test_default_workspace_outside_backend_tree() -> None:
+    """The default workspace lives outside the backend package.
+
+    Clones are written under the workspace, so placing it inside the package
+    would sit within uvicorn's --reload watch dir and restart the dev server.
+    """
+    settings = Settings(_env_file=None)
+    workspace = Path(settings.workspace_dir).resolve()
+    backend_root = Path(__file__).resolve().parents[1]
+    assert backend_root not in workspace.parents
+    assert workspace.name == ".xdebug-workspace"
 
 
 def test_settings_from_environment(monkeypatch) -> None:
