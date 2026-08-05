@@ -42,3 +42,9 @@ class GitHubCloneRequest(BaseModel):
     """Request body for cloning a GitHub repository."""
 
     url: str = Field(min_length=1, max_length=2048)
+
+
+class ProjectStartRequest(BaseModel):
+    """Request body for starting analysis, runtime, or test runs."""
+
+    project_id: str = Field(min_length=1)

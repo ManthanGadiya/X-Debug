@@ -25,6 +25,7 @@ export function AnalysisDetailPage() {
   const graph = usePolling(() => api.getGraph(analysisId, kind), {
     interval: 8000,
     done: (data) => data !== null,
+    deps: [analysisId, kind],
   })
 
   const run = detail.data

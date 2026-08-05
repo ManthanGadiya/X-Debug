@@ -14,6 +14,7 @@ interface HistoryTableProps<T> {
   getRowId: (row: T) => string
   loading?: boolean
   error?: string | null
+  errorTitle?: string
   emptyLabel?: string
 }
 
@@ -24,11 +25,12 @@ export function HistoryTable<T>({
   getRowId,
   loading = false,
   error = null,
+  errorTitle = 'Failed to load',
   emptyLabel = 'No records yet',
 }: HistoryTableProps<T>) {
   if (error) {
     return (
-      <Alert color="red" title="Failed to load">
+      <Alert color="red" title={errorTitle}>
         {error}
       </Alert>
     )

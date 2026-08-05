@@ -1,14 +1,15 @@
 import { Alert, Grid, Group, Stack, Text } from '@mantine/core'
 import { Link } from 'react-router-dom'
-import { api, type ProjectSummary } from '../api/client'
-import { DetailLink, HistoryTable, type HistoryColumn } from '../components/HistoryTable'
+import { api } from '../api/client'
+import { DetailLink, HistoryTable } from '../components/HistoryTable'
 import { PageHeader } from '../components/PageHeader'
+import { projectColumns } from '../components/projectColumns'
 import { SectionCard } from '../components/SectionCard'
 import { StatCard } from '../components/StatCard'
 import { StatusBadge } from '../components/StatusBadge'
 import { UploadPanel } from '../components/UploadPanel'
 import { usePolling } from '../hooks/usePolling'
-import { formatBytes, formatDate } from '../utils/format'
+import { formatDate } from '../utils/format'
 
 export function DashboardPage() {
   const projects = usePolling(() => api.listProjects(), { interval: 15000 })
@@ -26,51 +27,7 @@ export function DashboardPage() {
     ...(tests.data ?? []),
   ].filter((run) => run.status === 'running' || run.status === 'queued').length
 
-  const projectColumns: HistoryColumn<ProjectSummary>[] = [
-    {
-      key: 'name',
-      header: 'Project',
-      render: (project) => (
-        <DetailLink to={`/projects/${project.id}`}>
-          <Text fw={600} c="brand">
-            {project.name}
-          </Text>
-        </DetailLink>
-      ),
-    },
-    {
-      key: 'files',
-      header: 'Files',
-      render: (project) => (
-        <Text c="dimmed">
-          {project.source_file_count} src · {project.file_count} total
-        </Text>
-      ),
-    },
-    {
-      key: 'size',
-      header: 'Size',
-      render: (project) => <Text c="dimmed">{formatBytes(project.total_size_bytes)}</Text>,
-    },
-    {
-      key: 'languages',
-      header: 'Languages',
-      render: (project) => (
-        <Group gap={6}>
-          {project.languages.map((language) => (
-            <Text key={language} size="xs" c="dimmed" style={{ fontFamily: 'var(--xmono)' }}>
-              {language}
-            </Text>
-          ))}
-        </Group>
-      ),
-    },
-    {
-      key: 'created',
-      header: 'Created',
-      render: (project) => <Text c="dimmed">{formatDate(project.created_at)}</Text>,
-    },
-  ]
+  const columns = projectColumns()
 
   return (
     <Stack gap="lg">
@@ -124,20 +81,15 @@ export function DashboardPage() {
             }
             delay={80}
           >
-            {projects.error ? (
-              <Alert color="red" title="Failed to load projects">
-                {projects.error}
-              </Alert>
-            ) : (
-              <HistoryTable
-                rows={projects.data ?? []}
-                columns={projectColumns}
-                getRowId={(project) => project.id}
-                loading={projects.loading}
-                error={null}
-                emptyLabel="No projects yet — upload a repository above."
-              />
-            )}
+            <HistoryTable
+              rows={projects.data ?? []}
+              columns={columns}
+              getRowId={(project) => project.id}
+              loading={projects.loading}
+              error={projects.error}
+              errorTitle="Failed to load projects"
+              emptyLabel="No projects yet — upload a repository above."
+            />
           </SectionCard>
         </Grid.Col>
 

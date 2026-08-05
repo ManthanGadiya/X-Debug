@@ -22,11 +22,11 @@ export function RuntimeDetailPage() {
 
   const trace = usePolling(
     () => (activeLanguage ? api.getTrace(runId, activeLanguage) : Promise.resolve(null)),
-    { interval: 8000, done: (data) => data !== null },
+    { interval: 8000, done: (data) => data !== null, deps: [runId, activeLanguage] },
   )
   const replay = usePolling(
     () => (activeLanguage ? api.getReplay(runId, activeLanguage) : Promise.resolve(null)),
-    { interval: 8000, done: (data) => data !== null },
+    { interval: 8000, done: (data) => data !== null, deps: [runId, activeLanguage] },
   )
 
   const [step, setStep] = useState<ReplayStep | null>(null)

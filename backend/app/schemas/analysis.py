@@ -9,12 +9,6 @@ from pydantic import BaseModel, Field
 from app.analysis.manager import AnalysisStatus
 
 
-class AnalysisStartRequest(BaseModel):
-    """Request body for starting an analysis run."""
-
-    project_id: str = Field(min_length=1)
-
-
 class AnalysisSummary(BaseModel):
     """Lifecycle state of one analysis run."""
 

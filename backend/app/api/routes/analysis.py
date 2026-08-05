@@ -16,12 +16,12 @@ from app.analysis.service import AnalysisService
 from app.container import ContainerDep
 from app.schemas.analysis import (
     AnalysisDetail,
-    AnalysisStartRequest,
     AnalysisSummary,
     GraphData,
     GraphEdgeSchema,
     GraphNodeSchema,
 )
+from app.schemas.projects import ProjectStartRequest
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 
@@ -51,7 +51,7 @@ def list_analysis(container: ContainerDep) -> list[AnalysisSummary]:
 )
 def start_analysis(
     container: ContainerDep,
-    request: AnalysisStartRequest,
+    request: ProjectStartRequest,
     background_tasks: BackgroundTasks,
 ) -> AnalysisSummary:
     """Queue a static analysis run for a previously ingested project."""

@@ -144,14 +144,6 @@ export interface ReplaySummary {
   last_index: number | null
 }
 
-export interface ReplayStepList {
-  language: string
-  total: number
-  offset: number
-  limit: number
-  items: ReplayStep[]
-}
-
 export interface TestSummary {
   id: string
   project_id: string
@@ -186,26 +178,6 @@ export interface TestSuiteDetail {
   duration_seconds: number
   error: string | null
   cases: TestCase[]
-}
-
-export interface KnowledgeStats {
-  node_count: number
-  edge_count: number
-  node_kinds: Record<string, number>
-  edge_kinds: Record<string, number>
-}
-
-export interface KnowledgeDetail {
-  project_id: string
-  status: string
-  created_at: string
-  updated_at: string
-  error: string | null
-  sources: string[]
-  missing_sources: string[]
-  stats: KnowledgeStats
-  nodes: GraphNode[]
-  edges: GraphEdge[]
 }
 
 export interface EvidenceSchema {
@@ -370,11 +342,6 @@ export const api = {
     request<ReplayStep>(`/runtime/${runId}/replay/${language}/step`, {
       query: { index },
     }),
-  getReplaySteps: (
-    runId: string,
-    language: Language,
-    query: { event_type?: string; function?: string; offset?: number; limit?: number } = {},
-  ) => request<ReplayStepList>(`/runtime/${runId}/replay/${language}/steps`, { query }),
 
   listTests: () => request<TestSummary[]>('/tests'),
   startTests: (projectId: string) =>
@@ -382,13 +349,6 @@ export const api = {
   getTestRun: (runId: string) => request<TestDetail>(`/tests/${runId}`),
   getTestResults: (runId: string, language: Language) =>
     request<TestSuiteDetail>(`/tests/${runId}/results/${language}`),
-
-  buildKnowledge: (projectId: string) =>
-    request<KnowledgeDetail>('/knowledge/build', {
-      method: 'POST',
-      body: { project_id: projectId },
-    }),
-  getKnowledge: (projectId: string) => request<KnowledgeDetail>(`/knowledge/${projectId}`),
 
   runLocalization: (projectId: string, language = 'python') =>
     request<LocalizationDetail>(`/localization/${projectId}`, {

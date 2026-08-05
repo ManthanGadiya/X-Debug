@@ -13,10 +13,10 @@ from app.container import ContainerDep
 from app.runtime.model import TestSuite
 from app.runtime.test_manager import TestManager, TestRun
 from app.runtime.test_runner import TestRunner
+from app.schemas.projects import ProjectStartRequest
 from app.schemas.runtime import (
     TestCaseSchema,
     TestDetail,
-    TestStartRequest,
     TestSuiteDetail,
     TestSummary,
 )
@@ -42,7 +42,7 @@ def list_test_runs(container: ContainerDep) -> list[TestSummary]:
 )
 def start_test_run(
     container: ContainerDep,
-    request: TestStartRequest,
+    request: ProjectStartRequest,
     background_tasks: BackgroundTasks,
 ) -> TestSummary:
     """Queue a test execution run for a previously ingested project."""

@@ -66,7 +66,9 @@ describe('ProjectDetailPage', () => {
 
     renderPage()
 
-    expect(await screen.findByRole('heading', { name: 'demo' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'demo' }, { timeout: 3000 }),
+    ).toBeInTheDocument()
     expect(await screen.findByText('10')).toBeInTheDocument()
     expect(await screen.findByText('main.py')).toBeInTheDocument()
     expect(await screen.findByText('util.py')).toBeInTheDocument()

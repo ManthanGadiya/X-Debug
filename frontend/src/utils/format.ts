@@ -24,11 +24,6 @@ export function formatDuration(seconds: number): string {
   return `${seconds.toFixed(2)} s`
 }
 
-export function formatPercent(value: number): string {
-  if (!Number.isFinite(value)) return '—'
-  return `${Math.round(value * 100)}%`
-}
-
 export function formatScore(value: number): string {
   if (!Number.isFinite(value)) return '—'
   return value.toFixed(3)

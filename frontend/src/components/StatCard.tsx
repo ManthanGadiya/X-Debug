@@ -3,7 +3,6 @@ import { Card, Stack, Text } from '@mantine/core'
 interface StatCardProps {
   label: string
   value: string
-  hint?: string
   tone?: 'default' | 'brand' | 'signal' | 'danger'
 }
 
@@ -15,7 +14,7 @@ const TONE_COLORS: Record<NonNullable<StatCardProps['tone']>, string> = {
 }
 
 /** An instrument-style readout: a large monospace value under a small label. */
-export function StatCard({ label, value, hint, tone = 'default' }: StatCardProps) {
+export function StatCard({ label, value, tone = 'default' }: StatCardProps) {
   return (
     <Card p="md" style={{ minWidth: 140 }}>
       <Stack gap={2}>
@@ -30,11 +29,6 @@ export function StatCard({ label, value, hint, tone = 'default' }: StatCardProps
         <Text size="xl" fw={600} style={{ fontFamily: 'var(--xmono)', color: TONE_COLORS[tone] }}>
           {value}
         </Text>
-        {hint ? (
-          <Text size="xs" c="dimmed">
-            {hint}
-          </Text>
-        ) : null}
       </Stack>
     </Card>
   )
