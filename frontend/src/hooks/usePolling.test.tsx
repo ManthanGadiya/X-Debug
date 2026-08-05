@@ -237,4 +237,39 @@ describe('usePolling', () => {
     })
     expect(calls).toBe(2)
   })
+
+  it('pauses polling while the document is hidden and resumes when visible', async () => {
+    vi.useFakeTimers()
+    let calls = 0
+    render(
+      <Harness
+        interval={500}
+        loader={() => {
+          calls += 1
+          return Promise.resolve('value')
+        }}
+      />,
+    )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(calls).toBe(1)
+
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' })
+    fireEvent(document, new Event('visibilitychange'))
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000)
+    })
+    expect(calls).toBe(1)
+
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' })
+    fireEvent(document, new Event('visibilitychange'))
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(calls).toBe(2)
+  })
 })

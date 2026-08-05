@@ -49,7 +49,7 @@ python -m venv .venv
 .venv\Scripts\activate        # Windows · macOS/Linux: source .venv/bin/activate
 pip install -e "backend[dev]"
 cd backend
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --reload-exclude .xdebug-workspace
 ```
 
 The API runs at **http://localhost:8000** with interactive docs at **http://localhost:8000/docs**. No configuration is required — the backend boots with safe defaults and writes analysis artifacts under `backend/.xdebug-workspace`.
