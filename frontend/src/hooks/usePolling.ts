@@ -82,6 +82,7 @@ export function usePolling<T>(
     cancelledRef.current = false
 
     const tick = async () => {
+      if (document.visibilityState === 'hidden') return
       const result = await run()
       if (cancelledRef.current) return
       const done = doneRef.current
@@ -89,9 +90,20 @@ export function usePolling<T>(
       timerRef.current = window.setTimeout(tick, interval)
     }
 
+    const onVisibilityChange = () => {
+      if (timerRef.current !== undefined) {
+        window.clearTimeout(timerRef.current)
+      }
+      if (document.visibilityState === 'visible') {
+        void tick()
+      }
+    }
+
     void tick()
+    document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
       cancelledRef.current = true
+      document.removeEventListener('visibilitychange', onVisibilityChange)
       if (timerRef.current !== undefined) {
         window.clearTimeout(timerRef.current)
       }
