@@ -82,7 +82,10 @@ class Container:
         """Return the lazily constructed static analysis service."""
         if self._analysis_service is None:
             cache = ParseCache(capacity=self._settings.analysis_cache_capacity)
-            self._analysis_service = AnalysisService(cache=cache)
+            self._analysis_service = AnalysisService(
+                cache=cache,
+                max_workers=self._settings.analysis_max_workers,
+            )
         return self._analysis_service
 
     @property

@@ -45,8 +45,11 @@ class Settings(BaseSettings):
     max_repository_size_mb: int = 200
     analysis_timeout_seconds: int = 300
 
-    # Static analysis caching (Phase 9).
+    # Static analysis performance (Phase 9).
     analysis_cache_capacity: int = 2048
+    # Threads used to parse source files concurrently. 0 selects a sensible
+    # default (min(32, cpu_count + 4)); 1 disables parallelism.
+    analysis_max_workers: int = 0
 
     # Repository ingestion (Phase 2).
     workspace_dir: str = "./.xdebug-workspace"

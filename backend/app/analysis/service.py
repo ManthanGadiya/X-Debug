@@ -3,7 +3,8 @@
 Orchestrates the Phase 3 analysis stages for a loaded project:
 
 1. Read each source file from disk.
-2. Parse it into the canonical AST model (per language).
+2. Parse it into the canonical AST model (per language), in parallel when the
+   project has multiple files.
 3. Build the dependency graph.
 4. Build the call graph.
 5. Build the control flow graph.
@@ -13,12 +14,21 @@ The result is a deterministic :class:`AnalysisResult` containing every graph
 plus the parsed modules. Per the architecture, partial results are preferred
 over total failure: a file that fails to parse is logged and skipped rather
 than aborting the analysis.
+
+Parsing is parallelized with a thread pool because both ``ast`` and
+tree-sitter release the GIL while parsing. Only parsers marked
+:attr:`Parser.thread_safe` are shared across workers; the rest get a fresh
+instance per worker. Results are assembled in ``project.source_files`` order so
+parallel execution stays deterministic.
 """
 
 from __future__ import annotations
 
 import logging
+import os
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
 
 from app.analysis.callgraph import CallGraphBuilder
@@ -32,7 +42,7 @@ from app.analysis.parsers.base import ParserRegistry
 from app.analysis.parsers.cache import ParseCache
 from app.core.errors import AnalysisError
 from app.core.logging import StructuredLogger, get_logger
-from app.projects.loader import Project
+from app.projects.loader import Project, SourceFileRecord
 
 logger = get_logger(__name__)
 
@@ -68,6 +78,7 @@ class AnalysisService:
         parser_registry: ParserRegistry | None = None,
         *,
         cache: ParseCache | None = None,
+        max_workers: int = 0,
         logger: StructuredLogger = logger,
     ) -> None:
         self._parser_registry = parser_registry or default_registry()
@@ -77,38 +88,15 @@ class AnalysisService:
         self._callgraph = CallGraphBuilder()
         self._cfg = CFGBuilder()
         self._dataflow = DataFlowAnalyzer()
+        if max_workers == 0:
+            max_workers = min(32, (os.cpu_count() or 1) + 4)
+        self._max_workers = max_workers
 
     def analyze(self, project: Project) -> AnalysisResult:
         """Analyze ``project`` and return the complete static analysis result."""
         root = Path(project.root_path)
         sources = _read_sources(root, project)
-
-        modules: list[ModuleAST] = []
-        unparsed: list[str] = []
-        for path in project.source_files:
-            if path.language is None:
-                continue
-            parser = self._parser_registry.get(path.language)
-            if parser is None:
-                unparsed.append(path.path)
-                continue
-            source = sources[path.path]
-            module = self._cache.get(path.language, path.path, source)
-            if module is None:
-                try:
-                    module = parser.parse(source, path.path)
-                except SyntaxError as exc:
-                    unparsed.append(path.path)
-                    self._logger.structured(
-                        logging.WARNING,
-                        "module failed to parse",
-                        file=path.path,
-                        reason=str(exc),
-                        project_id=project.id,
-                    )
-                    continue
-                self._cache.put(path.language, path.path, source, module)
-            modules.append(module)
+        modules, unparsed = self._parse_source_files(sources, project)
 
         result = AnalysisResult(project_id=project.id, modules=modules, unparsed_files=unparsed)
 
@@ -124,10 +112,66 @@ class AnalysisService:
             project_id=project.id,
             modules=len(modules),
             unparsed=len(unparsed),
+            workers=self._max_workers,
             cache_hits=self._cache.hit_count,
             cache_misses=self._cache.miss_count,
         )
         return result
+
+    def _parse_source_files(
+        self, sources: dict[str, str], project: Project
+    ) -> tuple[list[ModuleAST], list[str]]:
+        """Parse every source file, preserving ``source_files`` order.
+
+        Returns ``(modules, unparsed_paths)``. Files are parsed concurrently
+        when the project has more than one file and more than one worker is
+        configured; a single file is always parsed directly to keep the common
+        case free of pool overhead.
+        """
+        tasks = [file for file in project.source_files if file.language is not None]
+        if len(tasks) <= 1 or self._max_workers == 1:
+            results = [self._parse_one(sources, project.id, file) for file in tasks]
+        else:
+            with ThreadPoolExecutor(max_workers=self._max_workers) as pool:
+                results = list(pool.map(partial(self._parse_one, sources, project.id), tasks))
+
+        modules = [module for module, _ in results if module is not None]
+        unparsed = [path for _, path in results if path is not None]
+        return modules, unparsed
+
+    def _parse_one(
+        self, sources: dict[str, str], project_id: str, source_file: SourceFileRecord
+    ) -> tuple[ModuleAST | None, str | None]:
+        """Parse a single source file, consulting the cache first.
+
+        Returns ``(module, None)`` on success or ``(None, path)`` when the file
+        has no supported parser or fails to parse. Unsupported-language and
+        parse failures are treated identically to the sequential pipeline.
+        """
+        if source_file.language is None:
+            return None, source_file.path
+        parser = self._parser_registry.get(source_file.language)
+        if parser is None:
+            return None, source_file.path
+        source = sources[source_file.path]
+        module = self._cache.get(source_file.language, source_file.path, source)
+        if module is not None:
+            return module, None
+        if not parser.thread_safe:
+            parser = type(parser)()
+        try:
+            module = parser.parse(source, source_file.path)
+        except SyntaxError as exc:
+            self._logger.structured(
+                logging.WARNING,
+                "module failed to parse",
+                file=source_file.path,
+                reason=str(exc),
+                project_id=project_id,
+            )
+            return None, source_file.path
+        self._cache.put(source_file.language, source_file.path, source, module)
+        return module, None
 
 
 def _read_sources(root: Path, project: Project) -> dict[str, str]:
