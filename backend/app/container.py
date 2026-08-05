@@ -15,6 +15,7 @@ from fastapi import Depends, Request
 from app.analysis.knowledge import KnowledgeGraphBuilder
 from app.analysis.knowledge_manager import KnowledgeGraphManager
 from app.analysis.manager import AnalysisManager
+from app.analysis.parsers.cache import ParseCache
 from app.analysis.service import AnalysisService
 from app.core.config import Settings, get_settings
 from app.core.logging import StructuredLogger, get_logger
@@ -80,7 +81,8 @@ class Container:
     def analysis_service(self) -> AnalysisService:
         """Return the lazily constructed static analysis service."""
         if self._analysis_service is None:
-            self._analysis_service = AnalysisService()
+            cache = ParseCache(capacity=self._settings.analysis_cache_capacity)
+            self._analysis_service = AnalysisService(cache=cache)
         return self._analysis_service
 
     @property
