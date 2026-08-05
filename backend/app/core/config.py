@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     max_repository_size_mb: int = 200
     analysis_timeout_seconds: int = 300
 
+    # Static analysis caching (Phase 9).
+    analysis_cache_capacity: int = 2048
+
     # Repository ingestion (Phase 2).
     workspace_dir: str = "./.xdebug-workspace"
     github_clone_timeout_seconds: int = 120

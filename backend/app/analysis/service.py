@@ -29,6 +29,7 @@ from app.analysis.graph import Graph
 from app.analysis.model import ModuleAST
 from app.analysis.parsers import default_registry
 from app.analysis.parsers.base import ParserRegistry
+from app.analysis.parsers.cache import ParseCache
 from app.core.errors import AnalysisError
 from app.core.logging import StructuredLogger, get_logger
 from app.projects.loader import Project
@@ -66,9 +67,11 @@ class AnalysisService:
         self,
         parser_registry: ParserRegistry | None = None,
         *,
+        cache: ParseCache | None = None,
         logger: StructuredLogger = logger,
     ) -> None:
         self._parser_registry = parser_registry or default_registry()
+        self._cache = cache or ParseCache()
         self._logger = logger
         self._dependency = DependencyGraphBuilder()
         self._callgraph = CallGraphBuilder()
@@ -89,18 +92,23 @@ class AnalysisService:
             if parser is None:
                 unparsed.append(path.path)
                 continue
-            try:
-                module = parser.parse(sources[path.path], path.path)
-                modules.append(module)
-            except SyntaxError as exc:
-                unparsed.append(path.path)
-                self._logger.structured(
-                    logging.WARNING,
-                    "module failed to parse",
-                    file=path.path,
-                    reason=str(exc),
-                    project_id=project.id,
-                )
+            source = sources[path.path]
+            module = self._cache.get(path.language, path.path, source)
+            if module is None:
+                try:
+                    module = parser.parse(source, path.path)
+                except SyntaxError as exc:
+                    unparsed.append(path.path)
+                    self._logger.structured(
+                        logging.WARNING,
+                        "module failed to parse",
+                        file=path.path,
+                        reason=str(exc),
+                        project_id=project.id,
+                    )
+                    continue
+                self._cache.put(path.language, path.path, source, module)
+            modules.append(module)
 
         result = AnalysisResult(project_id=project.id, modules=modules, unparsed_files=unparsed)
 
@@ -116,6 +124,8 @@ class AnalysisService:
             project_id=project.id,
             modules=len(modules),
             unparsed=len(unparsed),
+            cache_hits=self._cache.hit_count,
+            cache_misses=self._cache.miss_count,
         )
         return result
 

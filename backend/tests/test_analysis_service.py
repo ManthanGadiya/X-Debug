@@ -5,7 +5,24 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.analysis import AnalysisService
+from app.analysis.model import ModuleAST
+from app.analysis.parsers.base import Parser, ParserRegistry
+from app.analysis.parsers.cache import ParseCache
+from app.projects.languages import Language
 from app.projects.loader import Project, ProjectLoader
+
+
+class _CountingParser(Parser):
+    """Parser stub that records how many times it is invoked."""
+
+    language = Language.PYTHON
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def parse(self, source: str, path: str) -> ModuleAST:
+        self.calls += 1
+        return ModuleAST(path=path, language=self.language)
 
 
 def _make_project(tmp_path: Path) -> tuple[ProjectLoader, Project]:
@@ -111,3 +128,38 @@ def test_c_files_are_parsed_with_python(tmp_path: Path) -> None:
     assert result.call_graph is not None
     call_nodes = {node.label for node in result.call_graph.nodes.values()}
     assert "helper" in call_nodes
+
+
+def test_repeated_analysis_reuses_parsed_modules(tmp_path: Path) -> None:
+    """Analyzing the same project twice parses each file only once."""
+    _, project = _make_project(tmp_path)
+    parser = _CountingParser()
+    registry = ParserRegistry(parsers={Language.PYTHON: parser})
+    cache = ParseCache(capacity=16)
+    service = AnalysisService(parser_registry=registry, cache=cache)
+
+    first = service.analyze(project)
+    second = service.analyze(project)
+
+    assert parser.calls == project.source_file_count
+    assert first.parsed_file_count == project.source_file_count
+    assert second.parsed_file_count == project.source_file_count
+    assert cache.hit_count >= project.source_file_count
+    assert [module.path for module in second.modules] == [module.path for module in first.modules]
+
+
+def test_edit_reparses_only_changed_file(tmp_path: Path) -> None:
+    """Changing one file between runs reparses exactly that file."""
+    loader, project = _make_project(tmp_path)
+    parser = _CountingParser()
+    registry = ParserRegistry(parsers={Language.PYTHON: parser})
+    cache = ParseCache(capacity=16)
+    service = AnalysisService(parser_registry=registry, cache=cache)
+
+    service.analyze(project)
+
+    (tmp_path / "repo" / "main.py").write_text("def run():\n    return 42\n", encoding="utf-8")
+    updated = loader.load(tmp_path / "repo", project_id="proj-1", name="demo", source="upload")
+    service.analyze(updated)
+
+    assert parser.calls == project.source_file_count + 1
