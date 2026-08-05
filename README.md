@@ -7,7 +7,7 @@
 
 ## Current Status
 
-* **Milestone:** Phase 9 — Testing & Optimization — backend runtime coverage at 100%
+* **Milestone:** Phase 9 — Testing & Optimization — backend runtime coverage at 100%, over-engineering audit complete
 * **Branch:** `main`
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
@@ -31,6 +31,7 @@
   * Frontend visualization components: graph viewer, code viewer, evidence viewer, status badges, stat cards, and report viewers in the diagnostic-instrument style
   * Frontend page test suites: Vitest + Testing Library coverage for all nine dashboard pages (45 tests) — dashboard, projects, analysis, runtime, tests, reports, and their detail views, including graph rendering, code viewer, language selectors, replay stepping, and polling behavior — with a green gate across test, typecheck, lint, and build
   * Backend test coverage pass: runtime harness and service modules raised to 100% coverage (harness tracing, path containment, CLI entry points, runner error handling), full backend suite at 310 tests with 96.31% total coverage and a green gate across pytest/ruff/black/mypy, merged through CI and released to `main`
+  * Over-engineering audit: removed ~1,200 lines of redundant code across both stacks while keeping behavior identical and all gates green — backend (shared bounded subprocess execution, consolidated start-request schema, shared resolve-function matcher, trimmed package shims and dead `services` package, dropped cfg dead accumulator) and frontend (config-driven `RunListPage` consolidating the analysis/runtime/tests list pages, shared `RunHistoryCard` and `projectColumns` factory, `HistoryTable`-owned error states replacing 7 duplicated alert wrappers, `usePolling` restart support, route-level `ErrorPage`, removal of dead client surface and the `oxlint` dev dependency) — 310 pytest at 96.28% coverage, 53 vitest, typecheck and lint clean, merged to `main` via PR #5
 * **Next milestone:** Phase 9 continued — performance optimization pass (graph optimization, parallel parsing, memory optimization, caching)
 
 Quick start:
