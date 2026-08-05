@@ -8,9 +8,18 @@ default so the backend can boot with zero configuration for local development.
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Repository root anchors the default workspace. The workspace holds cloned and
+# uploaded repositories (plus analysis artifacts) that change constantly, so
+# defaulting it below ``backend/`` would sit inside uvicorn's ``--reload`` watch
+# dir and restart the dev server on every clone. Anchoring it to the repo root
+# keeps those writes out of the watched tree regardless of the launch flags.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_DEFAULT_WORKSPACE_DIR = str(_REPO_ROOT / ".xdebug-workspace")
 
 
 class Settings(BaseSettings):
@@ -52,7 +61,7 @@ class Settings(BaseSettings):
     analysis_max_workers: int = 0
 
     # Repository ingestion (Phase 2).
-    workspace_dir: str = "./.xdebug-workspace"
+    workspace_dir: str = _DEFAULT_WORKSPACE_DIR
     github_clone_timeout_seconds: int = 120
 
     # Runtime execution (Phase 4).
