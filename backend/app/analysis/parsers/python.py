@@ -19,6 +19,7 @@ class PythonParser(Parser):
     """Parse Python source into the canonical AST model."""
 
     language = Language.PYTHON
+    thread_safe = True
 
     def parse(self, source: str, path: str) -> ModuleAST:
         """Parse ``source`` and return its canonical representation."""

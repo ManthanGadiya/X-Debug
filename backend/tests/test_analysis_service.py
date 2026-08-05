@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from pathlib import Path
 
 from app.analysis import AnalysisService
@@ -13,16 +14,51 @@ from app.projects.loader import Project, ProjectLoader
 
 
 class _CountingParser(Parser):
-    """Parser stub that records how many times it is invoked."""
+    """Parser stub that records how many times it is invoked.
+
+    The count is shared across instances because the service hands
+    non-thread-safe parsers a fresh instance per worker.
+    """
 
     language = Language.PYTHON
-
-    def __init__(self) -> None:
-        self.calls = 0
+    _lock = threading.Lock()
+    _count = 0
 
     def parse(self, source: str, path: str) -> ModuleAST:
-        self.calls += 1
+        with type(self)._lock:
+            type(self)._count += 1
         return ModuleAST(path=path, language=self.language)
+
+    @classmethod
+    def reset(cls) -> None:
+        with cls._lock:
+            cls._count = 0
+
+    @classmethod
+    def total_calls(cls) -> int:
+        return cls._count
+
+
+class _RecordingParser(Parser):
+    """Parser stub that records which instance performed each parse."""
+
+    language = Language.PYTHON
+    _lock = threading.Lock()
+    _instance_ids: set[int] = set()
+
+    def parse(self, source: str, path: str) -> ModuleAST:
+        with type(self)._lock:
+            type(self)._instance_ids.add(id(self))
+        return ModuleAST(path=path, language=self.language)
+
+    @classmethod
+    def reset(cls) -> None:
+        with cls._lock:
+            cls._instance_ids.clear()
+
+    @classmethod
+    def instance_ids(cls) -> set[int]:
+        return set(cls._instance_ids)
 
 
 def _make_project(tmp_path: Path) -> tuple[ProjectLoader, Project]:
@@ -46,6 +82,18 @@ def _make_project(tmp_path: Path) -> tuple[ProjectLoader, Project]:
 
     loader = ProjectLoader(max_size_bytes=1024 * 1024)
     project = loader.load(root, project_id="proj-1", name="demo", source="upload")
+    return loader, project
+
+
+def _make_multi_file_project(tmp_path: Path, count: int = 6) -> tuple[ProjectLoader, Project]:
+    root = tmp_path / "multi"
+    root.mkdir()
+    for index in range(count):
+        (root / f"mod{index}.py").write_text(
+            f"def func{index}(x):\n    return x + {index}\n", encoding="utf-8"
+        )
+    loader = ProjectLoader(max_size_bytes=1024 * 1024)
+    project = loader.load(root, project_id="proj-multi", name="multi", source="upload")
     return loader, project
 
 
@@ -133,6 +181,7 @@ def test_c_files_are_parsed_with_python(tmp_path: Path) -> None:
 def test_repeated_analysis_reuses_parsed_modules(tmp_path: Path) -> None:
     """Analyzing the same project twice parses each file only once."""
     _, project = _make_project(tmp_path)
+    _CountingParser.reset()
     parser = _CountingParser()
     registry = ParserRegistry(parsers={Language.PYTHON: parser})
     cache = ParseCache(capacity=16)
@@ -141,7 +190,7 @@ def test_repeated_analysis_reuses_parsed_modules(tmp_path: Path) -> None:
     first = service.analyze(project)
     second = service.analyze(project)
 
-    assert parser.calls == project.source_file_count
+    assert _CountingParser.total_calls() == project.source_file_count
     assert first.parsed_file_count == project.source_file_count
     assert second.parsed_file_count == project.source_file_count
     assert cache.hit_count >= project.source_file_count
@@ -151,6 +200,7 @@ def test_repeated_analysis_reuses_parsed_modules(tmp_path: Path) -> None:
 def test_edit_reparses_only_changed_file(tmp_path: Path) -> None:
     """Changing one file between runs reparses exactly that file."""
     loader, project = _make_project(tmp_path)
+    _CountingParser.reset()
     parser = _CountingParser()
     registry = ParserRegistry(parsers={Language.PYTHON: parser})
     cache = ParseCache(capacity=16)
@@ -162,4 +212,74 @@ def test_edit_reparses_only_changed_file(tmp_path: Path) -> None:
     updated = loader.load(tmp_path / "repo", project_id="proj-1", name="demo", source="upload")
     service.analyze(updated)
 
-    assert parser.calls == project.source_file_count + 1
+    assert _CountingParser.total_calls() == project.source_file_count + 1
+
+
+def test_parallel_analysis_matches_sequential(tmp_path: Path) -> None:
+    """Parallel parsing produces the same modules and graphs in the same order."""
+    _, project = _make_multi_file_project(tmp_path)
+    sequential = AnalysisService(max_workers=1).analyze(project)
+    parallel = AnalysisService(max_workers=4).analyze(project)
+
+    assert [module.path for module in parallel.modules] == [
+        module.path for module in sequential.modules
+    ]
+    assert parallel.unparsed_files == sequential.unparsed_files
+    assert parallel.parsed_file_count == sequential.parsed_file_count
+    assert sequential.dependency_graph is not None and parallel.dependency_graph is not None
+    assert {(e.source, e.target, e.kind) for e in parallel.dependency_graph.edges} == {
+        (e.source, e.target, e.kind) for e in sequential.dependency_graph.edges
+    }
+    assert sequential.call_graph is not None and parallel.call_graph is not None
+    assert {node.label for node in parallel.call_graph.nodes.values()} == {
+        node.label for node in sequential.call_graph.nodes.values()
+    }
+
+
+def test_parallel_analysis_records_unparsed(tmp_path: Path) -> None:
+    """Files that fail to parse are recorded under parallel parsing."""
+    root = tmp_path / "broken"
+    root.mkdir()
+    (root / "a.py").write_text("x = 1\n", encoding="utf-8")
+    (root / "b.py").write_text("def broken(:\n", encoding="utf-8")
+    (root / "c.py").write_text("y = 2\n", encoding="utf-8")
+
+    loader = ProjectLoader(max_size_bytes=1024 * 1024)
+    project = loader.load(root, project_id="proj-broken", name="broken", source="upload")
+    result = AnalysisService(max_workers=4).analyze(project)
+
+    assert result.parsed_file_count == 2
+    assert result.failed_file_count == 1
+    assert "b.py" in result.unparsed_files
+    assert result.cfg is not None
+
+
+def test_parallel_analysis_reuses_cache(tmp_path: Path) -> None:
+    """Repeated parallel analyses hit the cache and keep module order."""
+    _, project = _make_multi_file_project(tmp_path)
+    cache = ParseCache(capacity=64)
+    service = AnalysisService(cache=cache, max_workers=4)
+
+    first = service.analyze(project)
+    second = service.analyze(project)
+
+    assert second.parsed_file_count == first.parsed_file_count
+    assert cache.hit_count >= first.parsed_file_count
+    assert [module.path for module in second.modules] == [module.path for module in first.modules]
+
+
+def test_non_thread_safe_parser_gets_fresh_instance_per_file(tmp_path: Path) -> None:
+    """Non-thread-safe parsers are never shared across parallel workers."""
+    _, project = _make_multi_file_project(tmp_path)
+    start_count = project.source_file_count
+    parser = _RecordingParser()
+    registry = ParserRegistry(parsers={Language.PYTHON: parser})
+    _RecordingParser.reset()
+
+    result = AnalysisService(parser_registry=registry, max_workers=4).analyze(project)
+
+    assert result.parsed_file_count == start_count
+    instance_ids = _RecordingParser.instance_ids()
+    assert id(parser) not in instance_ids
+    assert 1 <= len(instance_ids) <= 4
+    assert result.parsed_file_count >= len(instance_ids)

@@ -19,6 +19,13 @@ class Parser(ABC):
 
     language: Language
 
+    # Whether calls to :meth:`parse` are safe from multiple threads on the same
+    # instance. Stateless parsers (for example ``ast``) may set this to ``True``
+    # so the analysis pipeline can share one instance across workers; parsers
+    # holding mutable state (for example a tree-sitter ``Parser``) must leave it
+    # ``False`` so the pipeline hands each worker a fresh instance instead.
+    thread_safe: bool = False
+
     @abstractmethod
     def parse(self, source: str, path: str) -> ModuleAST:
         """Parse ``source`` and return its canonical representation."""
