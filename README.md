@@ -7,7 +7,7 @@
 
 ## Current Status
 
-* **Milestone:** Phase 9 — Testing & Optimization — backend runtime coverage at 100%, over-engineering audit and parse caching complete
+* **Milestone:** Phase 9 — Testing & Optimization — backend runtime coverage at 100%, over-engineering audit, parse caching, and parallel parsing complete
 * **Branch:** `main`
 * **Completed:**
   * Backend foundation (FastAPI): config, structured logging, DI container, error envelopes, request middleware, health endpoint
@@ -33,7 +33,8 @@
   * Backend test coverage pass: runtime harness and service modules raised to 100% coverage (harness tracing, path containment, CLI entry points, runner error handling), full backend suite at 310 tests with 96.31% total coverage and a green gate across pytest/ruff/black/mypy, merged through CI and released to `main`
   * Over-engineering audit: removed ~1,200 lines of redundant code across both stacks while keeping behavior identical and all gates green — backend (shared bounded subprocess execution, consolidated start-request schema, shared resolve-function matcher, trimmed package shims and dead `services` package, dropped cfg dead accumulator) and frontend (config-driven `RunListPage` consolidating the analysis/runtime/tests list pages, shared `RunHistoryCard` and `projectColumns` factory, `HistoryTable`-owned error states replacing 7 duplicated alert wrappers, `usePolling` restart support, route-level `ErrorPage`, removal of dead client surface and the `oxlint` dev dependency) — 310 pytest at 96.28% coverage, 53 vitest, typecheck and lint clean, merged to `main` via PR #5
   * Parse caching: bounded, content-addressed cache (language + path + SHA-256 of source) that skips re-parsing unchanged files when a project is analyzed more than once or after a single-file edit — LRU eviction, configurable capacity (`XDEBUG_ANALYSIS_CACHE_CAPACITY`, default 2048), hit/miss counters on the analysis log, shared through the DI container, with cached modules read-only by convention — 320 pytest at 96.31% coverage, ruff/black/mypy clean, merged to `main` via PR #7
-* **Next milestone:** Phase 9 continued — performance optimization pass (graph optimization, parallel parsing, memory optimization)
+  * Parallel parsing: multi-file projects parsed concurrently with a thread pool (both `ast` and tree-sitter release the GIL), with results assembled in `source_files` order so analysis stays deterministic (identical modules and graphs to the sequential path) — stateless parsers (`PythonParser`) marked `Parser.thread_safe` are shared across workers while mutable tree-sitter parsers are instantiated per worker, worker count configurable (`XDEBUG_ANALYSIS_MAX_WORKERS`, default auto, `1` disables), and single-file projects skip the pool entirely — 324 pytest at 96.35% coverage, ruff/black/mypy clean, merged to `main` via PR #9
+* **Next milestone:** Phase 9 continued — performance optimization pass (graph optimization, memory optimization)
 
 Quick start:
 
